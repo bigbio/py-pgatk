@@ -1,2 +1,1 @@
-# py-pgatk
-Python tools for proteogenomics analysis toolkit
+# Python tools for ProteoGenomics Analysis Toolkit
