@@ -1,6 +1,7 @@
 """
 Get species related files using the ENSEMBL REST API 
 """
+
 import os
 from json import loads
 from requests import get
@@ -54,13 +55,18 @@ def get_pep_files(species_info: dict, output_dir: str,
         os.mkdir(output_dir)
         
     for species in species_info:
-        file_name = '{}.{}.pep.all.fa.gz'.format(species['name'][0].upper()
-                                                 +species['name'][1:], 
-                                                species['assembly'])
-        file_url = '{}/release-{}/fasta/{}/pep/{}'.format(ftp_server, 
-                                                          species['release'], 
-                                                          species['name'], 
-                                                          file_name)
+        try:
+            file_name = '{}.{}.pep.all.fa.gz'.format(species['name'][0].upper()
+                                                     +species['name'][1:], 
+                                                    species['assembly'])
+            file_url = '{}/release-{}/fasta/{}/pep/{}'.format(ftp_server, 
+                                                              species['release'], 
+                                                              species['name'], 
+                                                              file_name)
+        except KeyError:
+            print("No valid info is available species: ", species)
+            continue
+        
         files.append(download_file(file_url, output_dir+'/'+file_name))
     
     return files
@@ -76,20 +82,29 @@ def get_gtf_files(species_info: dict, output_dir: str,
         os.mkdir(output_dir)
         
     for species in species_info:
-        file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper()
-                                                 +species['name'][1:], 
-                                                species['assembly'], 
-                                                species['release'],)
-        file_url = '{}/release-{}/gtf/{}/{}'.format(ftp_server, 
-                                                    species['release'], 
-                                                    species['name'], 
-                                                    file_name)
+        try:
+            file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper()
+                                                     +species['name'][1:], 
+                                                    species['assembly'], 
+                                                    species['release'],)
+            file_url = '{}/release-{}/gtf/{}/{}'.format(ftp_server, 
+                                                        species['release'], 
+                                                        species['name'], 
+                                                        file_name)
+        except KeyError:
+            print("No valid info is available species: ", species)
+            continue
+        
         files.append(download_file(file_url, output_dir+'/'+file_name))
     
     return files
     
 if __name__ == '__main__':
     species_info = get_species()
-    pep_files = get_pep_files(species_info, output_dir='pep-release{}'.format(species_info[0]['release']))
-    gtf_files = get_gtf_files(species_info, output_dir='gtf-release{}'.format(species_info[0]['release']))
+    pep_files = get_pep_files(species_info, 
+                              output_dir='{}pep-release{}'.format(
+                                  './', species_info[0]['release']))
+    gtf_files = get_gtf_files(species_info, 
+                              output_dir='{}gtf-release{}'.format(
+                                  './', species_info[0]['release']))
     
