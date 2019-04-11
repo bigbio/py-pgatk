@@ -8,7 +8,7 @@ options
 import logging
 import click
 from ensembl.data_downloader import EnsemblDataDownloadService
-from exceptions import AppConfigException
+from toolbox.exceptions import AppConfigException
 
 __configuration_file = None
 __pipeline_arguments = None
@@ -70,9 +70,12 @@ def main(ctx, config_file, output_directory, folder_prefix_release, taxonomy):
 
     pipeline_arguments = get_pipeline_arguments(output_directory, folder_prefix_release, taxonomy)
     ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
+
     logger = ensembl_download_service.get_logger_for("Main Pipeline Ensembl Downloader")
     logger.info("Pipeline STARTING ... ")
+
     ensembl_download_service.download_database_by_species()
+
     logger.info("Pipeline Finish !!!")
 
 

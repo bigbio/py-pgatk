@@ -1,7 +1,7 @@
 """
 Ensembl module related exceptions
 """
-from exceptions import AppException
+from toolbox.exceptions import AppException
 
 
 class EnsemblServiceException(AppException):

@@ -13,6 +13,7 @@ from json import loads
 from requests import get
 from toolbox.general import ParameterConfiguration, check_create_folders, download_file
 
+
 class EnsemblDataDownloadService(ParameterConfiguration):
     """
     This Service is in charge of grabbing data (download) from Ensembl to a local repository
@@ -47,6 +48,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         super(EnsemblDataDownloadService, self).__init__(self._CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                          pipeline_arguments)
 
+        self._ensembl_species = []
         if self._CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
             self._local_path_ensembl = self.get_pipeline_parameters()[self._CONFIG_OUTPUT_DIRECTORY]
         else:
@@ -88,16 +90,29 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         species_parameters = self.get_pipeline_parameters()[self._CONFIG_TAXONOMY]
         species_list = species_parameters.split(",")
         total_files = []
-        for species_id in species_list:
+        if species_list is None or len(species_list) == 0 or len(species_parameters) == 0:
             for species in self._ensembl_species:
-                if species_id == species[self._CONFIG_REST_API_TAXON_ID]:
-                    self.get_logger().debug("Downloading the data for the specie -- " + species[self._CONFIG_REST_API_TAXON_ID])
-                    files = self.get_pep_files(species)
-                    gtf_files = self.gt_gtf_files(species)
-                    files.extend(gtf_files)
-                    total_files.extend(files)
-                    self.get_logger().debug("Files downloaded -- " + ",".join(files))
-                    total_files.extend(files)
+                self.get_logger().debug(
+                    "Downloading the data for the specie -- " + species[self._CONFIG_REST_API_TAXON_ID])
+                files = self.get_pep_files(species)
+                gtf_files = self.gt_gtf_files(species)
+                files.extend(gtf_files)
+                total_files.extend(files)
+                self.get_logger().debug("Files downloaded -- " + ",".join(files))
+                total_files.extend(files)
+        else:
+            for species_id in species_list:
+                for species in self._ensembl_species:
+                    if species_id == species[self._CONFIG_REST_API_TAXON_ID]:
+                        self.get_logger().debug(
+                            "Downloading the data for the specie -- " + species[self._CONFIG_REST_API_TAXON_ID])
+                        files = self.get_pep_files(species)
+                        gtf_files = self.gt_gtf_files(species)
+                        files.extend(gtf_files)
+                        total_files.extend(files)
+                        self.get_logger().debug("Files downloaded -- " + ",".join(files))
+                        total_files.extend(files)
+
         return total_files
 
     def get_pep_files(self, species: dict) -> list:
@@ -113,10 +128,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_ENSEMBL_FTP][
                     self._CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
         except KeyError:
             print("No valid info is available species: ", species)
-
-        files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
 
         return files
 
@@ -131,13 +145,14 @@ class EnsemblDataDownloadService(ParameterConfiguration):
           """
         files = []
         try:
-            file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper()+ species['name'][1:],species['assembly'],species['release'], )
-            file_url = '{}/release-{}/gtf/{}/{}'.format(self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_ENSEMBL_FTP][
-                    self._CONFIG_KEY_BASE_URL], species['release'],species['name'],file_name)
+            file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
+                                                 species['release'], )
+            file_url = '{}/release-{}/gtf/{}/{}'.format(
+                self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_ENSEMBL_FTP][
+                    self._CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
         except KeyError:
             print("No valid info is available species: ", species)
-
-        files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
 
         return files
 

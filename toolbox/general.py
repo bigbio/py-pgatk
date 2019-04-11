@@ -13,7 +13,7 @@ from urllib import error, request
 import yaml
 
 
-from exceptions import ToolBoxException, ConfigManagerException
+from toolbox.exceptions import ToolBoxException
 
 # Logging defaults
 _logger_formatters = {
