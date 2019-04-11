@@ -1,5 +1,6 @@
 """
 This module implements some useful functions for the pipeline runner.
+
 @author ypriverol
 """
 import logging
@@ -7,12 +8,8 @@ import os
 import json
 import shutil
 import subprocess
-
 from urllib import error, request
-
 import yaml
-
-
 from toolbox.exceptions import ToolBoxException
 
 # Logging defaults
