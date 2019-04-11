@@ -1,0 +1,27 @@
+ensembl_data_downloader:
+  output_directory: database/
+  ensembl_ftp:
+    base_url: ftp://ftp.ensembl.org/pub
+  rewrite_local_path_ensembl_repo: 'False'
+  ensembl_file_names:
+    protein_sequence_file:
+      file_type: pep
+      file_suffixes:
+      - all
+      - abinitio
+      file_extension: fa
+    gtf_file:
+      file_suffixes:
+      - ''
+      - abinitio.
+      - chr.
+      - chr_patch_hapl_scaff.
+      file_extension: gtf
+  ensembl_api:
+    server: http://rest.ensembl.org
+    species: /info/species
+  logger:
+    formatters:
+      DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
+      INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
+    loglevel: DEBUG
