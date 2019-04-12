@@ -6,36 +6,32 @@ from collections import OrderedDict
 
 def TRYPSIN(proseq, miss_cleavage):
     peptides = []
-    cut_sites = [0]
-    for i in range(0, len(proseq) - 1):
-        if proseq[i] == 'K' and proseq[i + 1] != 'P':
-            cut_sites.append(i + 1)
-        elif proseq[i] == 'R' and proseq[i + 1] != 'P':
-            cut_sites.append(i + 1)
-
-    if cut_sites[-1] != len(proseq):
-        cut_sites.append(len(proseq))
-
-    if miss_cleavage == 0:
-        for j in range(0, len(cut_sites) - 1):
-            peptides.append(proseq[cut_sites[j]:cut_sites[j + 1]])
-
-    elif miss_cleavage == 1:
-        for j in range(0, len(cut_sites) - 2):
-            peptides.append(proseq[cut_sites[j]:cut_sites[j + 1]])
-            peptides.append(proseq[cut_sites[j]:cut_sites[j + 2]])
-
-        peptides.append(proseq[cut_sites[-2]:cut_sites[-1]])
-
-    elif miss_cleavage == 2:
-        for j in range(0, len(cut_sites) - 3):
-            peptides.append(proseq[cut_sites[j]:cut_sites[j + 1]])
-            peptides.append(proseq[cut_sites[j]:cut_sites[j + 2]])
-            peptides.append(proseq[cut_sites[j]:cut_sites[j + 3]])
-
-        peptides.append(proseq[cut_sites[-3]:cut_sites[-2]])
-        peptides.append(proseq[cut_sites[-3]:cut_sites[-1]])
-        peptides.append(proseq[cut_sites[-2]:cut_sites[-1]])
+    peptide = ''
+    for c, aa in enumerate(seq):
+        peptide+=aa
+        next_aa = ''
+        try:
+            next_aa = seq[c+1]
+        except IndexError:
+            pass
+            
+        if (aa in ['K','R'] and next_aa!='P'): # for trypsin peptides
+            if len(peptide)>0:
+                peptides.append(peptide)
+            peptide = ''
+            continue
+            
+    if len(peptide)>0:
+        peptides.append(peptide)
+    
+    peptides_with_miss_cleavage = []
+    for i in range(1, miss_cleavage+1):
+        for j,pep in enumerate(peptides):
+            if j+i<len(peptides):
+                peptide = ''.join([x for x in (peptides[j:j+i+1])])
+                peptides_with_miss_cleavage.append(peptide)
+    
+    peptides.extend(peptides_with_miss_cleavage)
 
     return peptides
 
