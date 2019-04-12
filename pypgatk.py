@@ -36,14 +36,7 @@ def cli():
               default='')
 @click.pass_context
 def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release, taxonomy):
-    """
-    The main method takes a set of parameters and create a configuration environment for the pipeline.
-    :param ctx: tool context
-    :param config_file: config file
-    :param output_directory: output directory
-    :param folder_prefix_release: folder prefix release
-    :param taxonomy: taxonomies to download
-    """
+    """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     if config_file is None:
         msg = "The config file for the pipeline is missing, please provide one "
@@ -66,6 +59,7 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
     ensembl_download_service.download_database_by_species()
 
     logger.info("Pipeline Finish !!!")
+
 
 if __name__ == "__main__":
     cli()

@@ -43,7 +43,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     def __init__(self, config_file, pipeline_arguments):
         """
         Init the class with the specific parameters.
-        :param params:
+        :param config_file configuration file
+        :param pipeline_arguments pipelines arguments
         """
         super(EnsemblDataDownloadService, self).__init__(self._CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                          pipeline_arguments)

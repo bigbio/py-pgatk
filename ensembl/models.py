@@ -10,10 +10,10 @@ class Species:
     def __init__(self, ensembl_species_entry):
         self.__ensembl_species_entry = ensembl_species_entry
 
-    def _get_logger(self):
+    def get_logger(self):
         return self.__logger
 
-    def _get_value_for_key_or_default(self, key, default_value='-not_available-'):
+    def get_value_for_key_or_default(self, key, default_value='-not_available-'):
         if key in self.get_ensembl_species_entry():
             return self.get_ensembl_species_entry()[key]
         return default_value
