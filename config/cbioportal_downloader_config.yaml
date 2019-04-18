@@ -1,0 +1,9 @@
+cbioportal_data_downloader:
+  output_directory: cbioportal/
+  cbioportal_api:
+    base_url: https://www.cbioportal.org/webservice.do
+  logger:
+    formatters:
+      DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
+      INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
+    loglevel: DEBUG

@@ -22,7 +22,7 @@ def cli():
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
-              default='config/config_ensembl_downloader.yaml')
+              default='config/ensembl_downloader_config.yaml')
 @click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
