@@ -3,10 +3,24 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
 import re
+import os
+import getopt
 
-mutfile = open(sys.argv[1], "r")
-fafile = SeqIO.parse(sys.argv[2], "fasta")
-output = open(sys.argv[3], "w")
+if len(sys.argv[1:])<=1:  ### Indicates that there are insufficient number of command-line arguments
+    print("Warning! wrong command!")
+    print("Example: python3 mutation2proteindb.py --input data_mutations_extended.txt --cds Ensembl75+90.human.cds.all.fa --output mutproteins.fa")
+else:
+    options, remainder = getopt.getopt(sys.argv[1:],'', ['input=','cds=','output='])
+    for opt, arg in options:
+        if opt == '--input': input_file=arg
+        elif opt == '--output': output_file=arg
+        elif opt == '--cds': cds_file=arg
+        else:
+            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt); sys.exit()
+
+mutfile = open(input_file, "r")
+fafile = SeqIO.parse(cds_file, "fasta")
+output = open(output_file, "w")
 
 seqdic = {}
 for record in fafile:
@@ -22,7 +36,7 @@ if f1[0] == "#":
 else:
     header = f1.strip().split("\t")
 
-print(header)
+#print(header)
 pos_col = header.index("HGVSc")
 enst_col = header.index("Transcript_ID")
 
