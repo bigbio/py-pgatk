@@ -1,17 +1,18 @@
 import sys
+import os
+import getopt
 import re
 from Bio import SeqIO
 from collections import OrderedDict
 
-
 def TRYPSIN(proseq, miss_cleavage):
     peptides = []
     peptide = ''
-    for c, aa in enumerate(seq):
+    for c, aa in enumerate(proseq):
         peptide+=aa
         next_aa = ''
         try:
-            next_aa = seq[c+1]
+            next_aa = proseq[c+1]
         except IndexError:
             pass
             
@@ -36,14 +37,26 @@ def TRYPSIN(proseq, miss_cleavage):
     return peptides
 
 
-handle1 = SeqIO.parse(sys.argv[1], 'fasta')  # All_COSMIC_Genes.fasta
+if len(sys.argv[1:])<=1:  ### Indicates that there are insufficient number of command-line arguments
+    print("Warning! wrong command!")
+    print("Example: python3 db/mutation2proteindb.py --input mutproteins.1.fa,mutproteins.2.fa --cds Ensembl75+90.human.cds.all.fa --prefix Mutation --output mutpeptides.fa")
+else:
+    options, remainder = getopt.getopt(sys.argv[1:],'', ['input=','cds=','output=','prefix='])
+    for opt, arg in options:
+        if opt == '--input': input_file=arg
+        elif opt == '--output': output_file=arg
+        elif opt == '--cds': cds_file=arg
+        elif opt == '--prefix': header_prefix=arg
+        else:
+            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt); sys.exit()
 
-filelist = sys.argv[3:]
+handle1 = SeqIO.parse(cds_file, 'fasta')  # gene cds sequence
+filelist = input_file.split(",")
 handle_list = []
 for f in filelist:
-    handle_list.append(SeqIO.parse(f, 'fasta'))  # Cosmic_mutant_proteins.fasta
+    handle_list.append(SeqIO.parse(f, 'fasta'))  # mutproteins.fasta
 
-output = open(sys.argv[2], 'w')
+output = open(output_file, 'w')
 
 peptidome = {}
 
@@ -72,7 +85,7 @@ for h in handle_list:
                     peptide1 = peptide.replace("I", "L")
                     if peptide1 not in peptidome:
                         des_list = descrip.split(":")
-                        des_list[0] = "COSMIC"
+                        des_list[0] = header_prefix
                         type = des_list[-1]
                         snp = des_list[-2]
                         if "Missense" in type:
