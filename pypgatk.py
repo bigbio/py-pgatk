@@ -28,7 +28,7 @@ def cli():
 @click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
-              default="./dabatase_ensembl/")
+              default="./database_ensembl/")
 @click.option('--folder_prefix_release',
               '-fp', help='Output folder prefix to download the data',
               default='release-')
