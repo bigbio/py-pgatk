@@ -86,7 +86,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
         file_url = '{}/{}'.format(
             self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_CBIOPORTAL_DOWNLOAD_URL],
             file_name)
-        file_name =  download_file(file_url, self.get_local_path_root_cbioportal_repo() + '/' + file_name)
+        file_name = download_file(file_url, self.get_local_path_root_cbioportal_repo() + '/' + file_name)
         msg = "The following study '{}' has been downloaded. ".format(file_name)
         self.get_logger().debug(msg)
         return file_name

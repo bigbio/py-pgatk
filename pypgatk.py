@@ -28,7 +28,7 @@ def cli():
 @click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
-              default="./database/")
+              default="./dabatase_ensembl/")
 @click.option('--folder_prefix_release',
               '-fp', help='Output folder prefix to download the data',
               default='release-')
@@ -36,8 +36,13 @@ def cli():
               '-t',
               help='Taxonomy List (comma separated) that will be use to download the data from Ensembl',
               default='')
+@click.option('--skip_gtf','-sg', help = "Skip the gtf file during the download", is_flag=True)
+@click.option('--skip_protein','-sp', help="Skip the protein fasta file during download", is_flag=True)
+@click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
+@click.option('--skip_ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
 @click.pass_context
-def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release, taxonomy):
+def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release, taxonomy, skip_gtf,
+                       skip_protein, skip_cds, skip_ncrna):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     if config_file is None:
@@ -45,6 +50,7 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
         logging.error(msg)
         raise AppConfigException(msg)
 
+    # Parse pipelines parameters.
     pipeline_arguments = {}
     if output_directory is not None:
         pipeline_arguments[EnsemblDataDownloadService._CONFIG_OUTPUT_DIRECTORY] = output_directory
@@ -52,6 +58,23 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
         pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_FOLDER_PREFIX_RELEASE] = folder_prefix_release
     if taxonomy is not None:
         pipeline_arguments[EnsemblDataDownloadService._CONFIG_TAXONOMY] = taxonomy
+    if skip_protein is not None and skip_protein:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_PROTEIN] = True
+    else:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_PROTEIN] = False
+    if skip_gtf is not None and skip_gtf:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_GTF] = True
+    else:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_GTF] = False
+    if skip_cds is not None and skip_cds:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_CDS] = True
+    else:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_CDS] = False
+
+    if skip_ncrna is not None and skip_ncrna:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_NCRNA] = True
+    else:
+        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_NCRNA] = False
 
     ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
 
