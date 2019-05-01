@@ -37,20 +37,42 @@ def TRYPSIN(proseq, miss_cleavage):
     return peptides
 
 
+
+min = 7 # default minimum peptide length
+max = 40 # default maximum peptide length
+header_prefix = "Mutation"
+cleavageMiss = 0 # number of misscleavage,default no misscleavage 
+
 if len(sys.argv[1:])<=1:  ### Indicates that there are insufficient number of command-line arguments
     print("Warning! wrong command!")
-    print("Example: python3 db/mutation2proteindb.py --input mutproteins.1.fa,mutproteins.2.fa --cds Ensembl75+90.human.cds.all.fa --prefix Mutation --output mutpeptides.fa")
+    print("Example: python3 digest_mutant_protein.py --input mutproteins.1.fa,mutproteins.2.fa --fa knownproteins.fa --prefix Mutation --output mutpeptides.fa --min_len 7 --max_len 40 --miss 0")
 else:
-    options, remainder = getopt.getopt(sys.argv[1:],'', ['input=','cds=','output=','prefix='])
+    options, remainder = getopt.getopt(sys.argv[1:],'', ['input=','fa=','output=','prefix=','min_len','max_len','miss'])
     for opt, arg in options:
         if opt == '--input': input_file=arg
         elif opt == '--output': output_file=arg
-        elif opt == '--cds': cds_file=arg
+        elif opt == '--fa': fa_file=arg
         elif opt == '--prefix': header_prefix=arg
+        elif opt == '--min_len': min=int(arg)
+        elif opt == '--max_len': max=int(arg)
+        elif opt == '--miss' : cleavageMiss=int(arg)
         else:
             print("Warning! Command-line argument: %s not recognized. Exiting..." % opt); sys.exit()
 
-handle1 = SeqIO.parse(cds_file, 'fasta')  # gene cds sequence
+handle1 = SeqIO.parse(fa_file, 'fasta')  # canonical protein sequences
+peptidome = {}
+
+for record in handle1:
+    aa_seq = record.seq
+    peptide_list = TRYPSIN(str(aa_seq), cleavageMiss)
+    for peptide in peptide_list:
+        if len(peptide) in range(min, max+1):
+            if peptide not in peptidome:
+                peptidome[peptide.replace("I", "L")] = 1
+
+print("known peptides number", len(peptidome))
+handle1.close()
+
 filelist = input_file.split(",")
 handle_list = []
 for f in filelist:
@@ -58,37 +80,23 @@ for f in filelist:
 
 output = open(output_file, 'w')
 
-peptidome = {}
-
-for record in handle1:
-    cds_seq = record.seq
-    aa_seq = cds_seq.translate(to_stop=True, stop_symbol="")
-    peptide_list = TRYPSIN(str(aa_seq), 0)
-    for peptide in peptide_list:
-        if len(peptide) in range(6, 41):
-            if peptide not in peptidome:
-                peptidome[peptide.replace("I", "L")] = 1
-
-print("known peptides number", len(peptidome))
-handle1.close()
-
 var_peptidome = OrderedDict()
 
 for h in handle_list:
     for record in h:
         proseq = record.seq
         descrip = record.description
-        if len(proseq) > 5:
-            peptide_list = TRYPSIN(str(proseq), 0)
+        if len(proseq) >= min:
+            peptide_list = TRYPSIN(str(proseq), cleavageMiss)
             for peptide in peptide_list:
-                if len(peptide) in range(6, 41):
+                if len(peptide) in range(min, max+1):
                     peptide1 = peptide.replace("I", "L")
-                    if peptide1 not in peptidome:
+                    if peptide1 not in peptidome: # check if the peptides are in canonical protein sequences 
                         des_list = descrip.split(":")
                         des_list[0] = header_prefix
-                        type = des_list[-1]
+                        mut_type = des_list[-1]
                         snp = des_list[-2]
-                        if "Missense" in type:
+                        if "Missense" in mut_type:
                             try:
                                 mut_pos = int(re.findall(r'\d+', snp)[0])
                                 index = str(proseq).index(peptide)
