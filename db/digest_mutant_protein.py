@@ -16,7 +16,7 @@ def TRYPSIN(proseq, miss_cleavage):
         except IndexError:
             pass
             
-        if (aa in ['K','R'] and next_aa!='P'): # for trypsin peptides
+        if aa in ['K', 'R'] and next_aa!= 'P': # for trypsin peptides
             if len(peptide)>0:
                 peptides.append(peptide)
             peptide = ''

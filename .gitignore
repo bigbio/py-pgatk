@@ -108,3 +108,5 @@ venv.bak/
 .pydevproject
 
 .idea/
+database_ensembl/
+database_cbioportal/
