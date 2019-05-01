@@ -1,4 +1,4 @@
-Bio
-click
-requests
-requests[security]
+Click==7.0
+bio==0.1.0
+requests==2.21.0
+PyYAML==5.1
