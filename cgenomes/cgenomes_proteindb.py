@@ -92,14 +92,12 @@ class CancerGenomesService(ParameterConfiguration):
                         mut_pro_seq = seq_mut.translate(to_stop=True)
 
                 elif "del" in snp.dna_mut:
-                    # Todo: @yafeng the index variable is not used in the code / algorithm, can we remove it ?
-                    index = snp.dna_mut.index("del")
-                    if len(positions) > 1:
+                    if len(positions) == 2:
                         del_index1 = int(positions[0]) - 1
                         del_index2 = int(positions[1])
                         seq_mut = seq[:del_index1] + seq[del_index2:]
                         mut_pro_seq = seq_mut.translate(to_stop=True)
-                    else:
+                    elif len(positions) == 1:
                         del_index1 = int(positions[0]) - 1
                         seq_mut = seq[:del_index1] + seq[del_index1 + 1:]
                         mut_pro_seq = seq_mut.translate(to_stop=True)
@@ -122,17 +120,11 @@ class CancerGenomesService(ParameterConfiguration):
                             ins_index1 = int(positions[0])
                             mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
                     elif "Deletion - In frame" in snp.type:
-                        try:
-                            # Todo: @yafeng the index variable is not used in the code / algorithm, can we remove it ?
-                            index = snp.aa_mut.index("del")
-                        except ValueError:
-                            # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type
-                            continue
-                        if len(positions) > 1:
+                        if len(positions) == 2:
                             del_index1 = int(positions[0]) - 1
                             del_index2 = int(positions[1])
                             mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index2:]
-                        else:
+                        elif len(positions) == 1:
                             del_index1 = int(positions[0]) - 1
                             mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index1 + 1:]
                     elif "Complex" in snp.type and "frameshift" not in snp.type:
@@ -169,8 +161,6 @@ class CancerGenomesService(ParameterConfiguration):
                             else:
                                 try:
                                     del_index1 = int(positions[0]) - 1
-                                    # Todo: @yanfeng del_index2 is not used in the code, Can we remove it?
-                                    del_index2 = int(positions[1])
                                     mut_pro_seq = protein_seq[:del_index1] + mut_aa.replace("*", "")
                                 except IndexError:
                                     # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type)
