@@ -15,13 +15,23 @@ from toolbox.exceptions import AppConfigException
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
+def print_help():
+    """
+    Print the help of the tool
+    :return:
+    """
+    ctx = click.get_current_context()
+    click.echo(ctx.get_help())
+    ctx.exit()
+
+
 # Cli returns command line requests
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
     """This is the main tool that give access to all commands and options provided by the pypgatk"""
 
 
-@cli.command()
+@cli.command('ensembl-downloader', short_helper='Command to download the ensembl information')
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
@@ -87,7 +97,7 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
     logger.info("Pipeline Finish !!!")
 
 
-@cli.command()
+@cli.command('cbioportal-downloader', short_help=' Command to download the the cbioportal studies')
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
@@ -113,17 +123,17 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
     if list_studies is not None:
         pipeline_arguments[CbioPortalDownloadService.CONFIG_LIST_STUDIES] = list_studies
 
-    cbioportal_downloader = CbioPortalDownloadService(config_file, pipeline_arguments)
+    cbioportal_downloader_service = CbioPortalDownloadService(config_file, pipeline_arguments)
 
     if list_studies is not None:
-        list_studies = cbioportal_downloader.get_cancer_studies()
+        list_studies = cbioportal_downloader_service.get_cancer_studies()
         print(list_studies)
 
     if download_study is not None:
-        cbioportal_downloader.download_study(download_study)
+        cbioportal_downloader_service.download_study(download_study)
 
 
-@cli.command()
+@cli.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
@@ -148,8 +158,13 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password):
         pipeline_arguments[CosmicDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
     if username is not None:
         pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_USER] = username
+    else:
+        print_help()
+
     if password is not None:
         pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_PASSWORD] = password
+    else:
+        print_help()
 
     cosmic_downloader = CosmicDownloadService(config_file, pipeline_arguments)
 
