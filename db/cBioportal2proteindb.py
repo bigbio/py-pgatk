@@ -3,7 +3,6 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
 import re
-import os
 import getopt
 
 if len(sys.argv[1:])<=1:  ### Indicates that there are insufficient number of command-line arguments

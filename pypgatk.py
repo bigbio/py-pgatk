@@ -37,8 +37,8 @@ def cli():
               '-t',
               help='Taxonomy List (comma separated) that will be use to download the data from Ensembl',
               default='')
-@click.option('--skip_gtf','-sg', help = "Skip the gtf file during the download", is_flag=True)
-@click.option('--skip_protein','-sp', help="Skip the protein fasta file during download", is_flag=True)
+@click.option('--skip_gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
+@click.option('--skip_protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
 @click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
 @click.option('--skip_ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
 @click.pass_context
@@ -54,28 +54,28 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
     # Parse pipelines parameters.
     pipeline_arguments = {}
     if output_directory is not None:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_OUTPUT_DIRECTORY] = output_directory
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
     if folder_prefix_release is not None:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_FOLDER_PREFIX_RELEASE] = folder_prefix_release
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_FOLDER_PREFIX_RELEASE] = folder_prefix_release
     if taxonomy is not None:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_TAXONOMY] = taxonomy
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_TAXONOMY] = taxonomy
     if skip_protein is not None and skip_protein:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_PROTEIN] = True
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_PROTEIN] = True
     else:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_PROTEIN] = False
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_PROTEIN] = False
     if skip_gtf is not None and skip_gtf:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_GTF] = True
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_GTF] = True
     else:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_GTF] = False
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_GTF] = False
     if skip_cds is not None and skip_cds:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_CDS] = True
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDS] = True
     else:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_CDS] = False
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDS] = False
 
     if skip_ncrna is not None and skip_ncrna:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_NCRNA] = True
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_NCRNA] = True
     else:
-        pipeline_arguments[EnsemblDataDownloadService._CONFIG_KEY_SKIP_NCRNA] = False
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_NCRNA] = False
 
     ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
 
@@ -98,7 +98,8 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
               default="./database_cbioportal/")
 @click.option('--list_studies', '-l',
               help='Print the list of all the studies in cBioPortal (https://www.cbioportal.org)', is_flag=True)
-@click.option('--download_study', '-d', help="Download an specific Study from cBioPortal -- (all to download all studies)")
+@click.option('--download_study', '-d',
+              help="Download an specific Study from cBioPortal -- (all to download all studies)")
 @click.pass_context
 def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study):
     if config_file is None:
@@ -108,9 +109,9 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
 
     pipeline_arguments = {}
     if output_directory is not None:
-        pipeline_arguments[CbioPortalDownloadService._CONFIG_OUTPUT_DIRECTORY] = output_directory
+        pipeline_arguments[CbioPortalDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
     if list_studies is not None:
-        pipeline_arguments[CbioPortalDownloadService._CONFIG_LIST_STUDIES] = list_studies
+        pipeline_arguments[CbioPortalDownloadService.CONFIG_LIST_STUDIES] = list_studies
 
     cbioportal_downloader = CbioPortalDownloadService(config_file, pipeline_arguments)
 
@@ -133,7 +134,8 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
               default="./database_cosmic/")
 @click.option('--username', '-u',
               help="Username for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
-@click.option('--password', '-p', help="Password for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
+@click.option('--password', '-p',
+              help="Password for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
 @click.pass_context
 def cosmic_downloader(ctx, config_file, output_directory, username, password):
     if config_file is None:
@@ -143,12 +145,11 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password):
 
     pipeline_arguments = {}
     if output_directory is not None:
-        pipeline_arguments[CosmicDownloadService._CONFIG_OUTPUT_DIRECTORY] = output_directory
+        pipeline_arguments[CosmicDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
     if username is not None:
-        pipeline_arguments[CosmicDownloadService._CONFIG_COSMIC_FTP_USER] = username
+        pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_USER] = username
     if password is not None:
-        pipeline_arguments[CosmicDownloadService._CONFIG_COSMIC_FTP_PASSWORD] = password
-
+        pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_PASSWORD] = password
 
     cosmic_downloader = CosmicDownloadService(config_file, pipeline_arguments)
 

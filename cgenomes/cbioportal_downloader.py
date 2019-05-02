@@ -7,13 +7,13 @@ from toolbox.general import ParameterConfiguration, check_create_folders, downlo
 
 
 class CbioPortalDownloadService(ParameterConfiguration):
-    _CONFIG_KEY_DATA_DOWNLOADER = 'cbioportal_data_downloader'
-    _CONFIG_KEY_CBIOPORTAL_DOWNLOAD_URL = 'cbioportal_download_url'
-    _CONFIG_OUTPUT_DIRECTORY = 'output_directory'
-    _CONFIG_CBIOPORTAL_API = 'cbioportal_api'
-    _CONFIG_CBIOPORTAL_API_SERVER = 'base_url'
-    _CONFIG_CBIOPORTAL_API_CANCER_STUDIES = "cancer_studies"
-    _CONFIG_LIST_STUDIES = "list_studies"
+    CONFIG_KEY_DATA_DOWNLOADER = 'cbioportal_data_downloader'
+    CONFIG_KEY_CBIOPORTAL_DOWNLOAD_URL = 'cbioportal_download_url'
+    CONFIG_OUTPUT_DIRECTORY = 'output_directory'
+    CONFIG_CBIOPORTAL_API = 'cbioportal_api'
+    CONFIG_CBIOPORTAL_API_SERVER = 'base_url'
+    CONFIG_CBIOPORTAL_API_CANCER_STUDIES = "cancer_studies"
+    CONFIG_LIST_STUDIES = "list_studies"
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -21,15 +21,15 @@ class CbioPortalDownloadService(ParameterConfiguration):
         :param config_file configuration file
         :param pipeline_arguments pipelines arguments
         """
-        super(CbioPortalDownloadService, self).__init__(self._CONFIG_KEY_DATA_DOWNLOADER, config_file,
+        super(CbioPortalDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                         pipeline_arguments)
 
         self.cbioportal_studies = []
-        if self._CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
-            self._local_path_cbioportal = self.get_pipeline_parameters()[self._CONFIG_OUTPUT_DIRECTORY]
+        if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
+            self._local_path_cbioportal = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
         else:
-            self._local_path_cbioportal = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][
-                self._CONFIG_OUTPUT_DIRECTORY]
+            self._local_path_cbioportal = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                self.CONFIG_OUTPUT_DIRECTORY]
 
         self.prepare_local_cbioportal_repository()
 
@@ -48,10 +48,10 @@ class CbioPortalDownloadService(ParameterConfiguration):
         This method will print the list of all cancer studies for the user.
         :return:
         """
-        server = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_CBIOPORTAL_API][
-            self._CONFIG_CBIOPORTAL_API_SERVER]
-        endpoint = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_CBIOPORTAL_API][
-            self._CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
+        server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
+            self.CONFIG_CBIOPORTAL_API_SERVER]
+        endpoint = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
+            self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
         self._cbioportal_studies = get(server + "?" + endpoint).text
         return self._cbioportal_studies
 
@@ -84,7 +84,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
     def download_one_study(self, download_study):
         file_name = '{}.tar.gz'.format(download_study)
         file_url = '{}/{}'.format(
-            self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_CBIOPORTAL_DOWNLOAD_URL],
+            self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_CBIOPORTAL_DOWNLOAD_URL],
             file_name)
         file_name = download_file(file_url, self.get_local_path_root_cbioportal_repo() + '/' + file_name)
         msg = "The following study '{}' has been downloaded. ".format(file_name)

@@ -19,30 +19,30 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     This Service is in charge of grabbing data (download) from Ensembl to a local repository
     """
 
-    _CONFIG_KEY_DATA_DOWNLOADER = 'ensembl_data_downloader'
-    _CONFIG_OUTPUT_DIRECTORY = 'output_directory'
-    _CONFIG_KEY_ENSEMBL_FTP = 'ensembl_ftp'
-    _CONFIG_ENSEMBL_API = 'ensembl_api'
-    _CONFIG_ENSEMBL_API_SERVER = 'server'
-    _CONFIG_ENSEMBL_API_SPECIES = 'species'
-    _CONFIG_KEY_BASE_URL = 'base_url'
-    _CONFIG_KEY_FOLDER_PREFIX_RELEASE = 'folder_prefix_release'
-    _CONFIG_KEY_FOLDER_NAME_FASTA = 'folder_name_fasta'
-    _CONFIG_KEY_FOLDER_NAME_PROTEIN_SEQUENCES = 'folder_name_protein_sequences'
-    _CONFIG_KEY_FOLDER_NAME_GTF = 'folder_name_gtf'
-    _CONFIG_KEY_REWRITE_LOCAL_PATH_ENSEMBL_REPO = 'rewrite_local_path_ensembl_repo'
-    _CONFIG_KEY_ENSEMBL_FILE_NAMES = 'ensembl_file_names'
-    _CONFIG_KEY_PROTEIN_SEQUENCE_FILE = 'protein_sequence_file'
-    _CONFIG_KEY_FILE_TYPE = 'file_type'
-    _CONFIG_KEY_FILE_SUFFIXES = 'file_suffixes'
-    _CONFIG_KEY_FILE_EXTENSION = 'file_extension'
-    _CONFIG_KEY_GTF_FILE = 'gtf_file'
-    _CONFIG_REST_API_TAXON_ID = 'taxon_id'
-    _CONFIG_TAXONOMY = 'taxonomy'
-    _CONFIG_KEY_SKIP_PROTEIN = 'skip_protein'
-    _CONFIG_KEY_SKIP_GTF = 'skip_gtf'
-    _CONFIG_KEY_SKIP_CDS = 'skip_cds'
-    _CONFIG_KEY_SKIP_NCRNA = 'skip_ncrna'
+    CONFIG_KEY_DATA_DOWNLOADER = 'ensembl_data_downloader'
+    CONFIG_OUTPUT_DIRECTORY = 'output_directory'
+    CONFIG_KEY_ENSEMBL_FTP = 'ensembl_ftp'
+    CONFIG_ENSEMBL_API = 'ensembl_api'
+    CONFIG_ENSEMBL_API_SERVER = 'server'
+    CONFIG_ENSEMBL_API_SPECIES = 'species'
+    CONFIG_KEY_BASE_URL = 'base_url'
+    CONFIG_KEY_FOLDER_PREFIX_RELEASE = 'folder_prefix_release'
+    CONFIG_KEY_FOLDER_NAME_FASTA = 'folder_name_fasta'
+    CONFIG_KEY_FOLDER_NAME_PROTEIN_SEQUENCES = 'folder_name_protein_sequences'
+    CONFIG_KEY_FOLDER_NAME_GTF = 'folder_name_gtf'
+    CONFIG_KEY_REWRITE_LOCAL_PATH_ENSEMBL_REPO = 'rewrite_local_path_ensembl_repo'
+    CONFIG_KEY_ENSEMBL_FILE_NAMES = 'ensembl_file_names'
+    CONFIG_KEY_PROTEIN_SEQUENCE_FILE = 'protein_sequence_file'
+    CONFIG_KEY_FILE_TYPE = 'file_type'
+    CONFIG_KEY_FILE_SUFFIXES = 'file_suffixes'
+    CONFIG_KEY_FILE_EXTENSION = 'file_extension'
+    CONFIG_KEY_GTF_FILE = 'gtf_file'
+    CONFIG_REST_API_TAXON_ID = 'taxon_id'
+    CONFIG_TAXONOMY = 'taxonomy'
+    CONFIG_KEY_SKIP_PROTEIN = 'skip_protein'
+    CONFIG_KEY_SKIP_GTF = 'skip_gtf'
+    CONFIG_KEY_SKIP_CDS = 'skip_cds'
+    CONFIG_KEY_SKIP_NCRNA = 'skip_ncrna'
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -50,15 +50,15 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         :param config_file configuration file
         :param pipeline_arguments pipelines arguments
         """
-        super(EnsemblDataDownloadService, self).__init__(self._CONFIG_KEY_DATA_DOWNLOADER, config_file,
+        super(EnsemblDataDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                          pipeline_arguments)
 
         self._ensembl_species = []
-        if self._CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
-            self._local_path_ensembl = self.get_pipeline_parameters()[self._CONFIG_OUTPUT_DIRECTORY]
+        if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
+            self._local_path_ensembl = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
         else:
-            self._local_path_ensembl = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][
-                self._CONFIG_OUTPUT_DIRECTORY]
+            self._local_path_ensembl = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                self.CONFIG_OUTPUT_DIRECTORY]
 
         self.prepare_local_ensembl_repository()
 
@@ -77,10 +77,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         Get the list of species from ENSEMBL rest API.
         :return:
         """
-        server = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_ENSEMBL_API][
-            self._CONFIG_ENSEMBL_API_SERVER]
-        endpoint = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_ENSEMBL_API][
-            self._CONFIG_ENSEMBL_API_SPECIES]
+        server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_ENSEMBL_API][
+            self.CONFIG_ENSEMBL_API_SERVER]
+        endpoint = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_ENSEMBL_API][
+            self.CONFIG_ENSEMBL_API_SPECIES]
         species_info = loads(get(server + endpoint, headers={"Content-Type": 'application/json'}).text)
         self._ensembl_species = species_info['species']
         return self._ensembl_species
@@ -92,22 +92,22 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         :return:
         """
         self.get_species_from_rest()
-        species_parameters = self.get_pipeline_parameters()[self._CONFIG_TAXONOMY]
+        species_parameters = self.get_pipeline_parameters()[self.CONFIG_TAXONOMY]
         species_list = species_parameters.split(",")
         total_files = []
         if species_list is None or len(species_list) == 0 or len(species_parameters) == 0:
             for species in self._ensembl_species:
                 self.get_logger().debug(
-                    "Downloading the data for the specie -- " + species[self._CONFIG_REST_API_TAXON_ID])
-                if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_PROTEIN]:
+                    "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
                     files = self.get_pep_files(species)
-                if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_GTF]:
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
                     gtf_files = self.get_gtf_files(species)
                     files.extend(gtf_files)
-                if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_CDS]:
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
                     cds_files = self.get_cds_files(species)
                     files.extend(cds_files)
-                if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_NCRNA]:
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
                     ncrna_files = self.get_ncrna_files(species)
                     files.extend(ncrna_files)
                 total_files.extend(files)
@@ -116,18 +116,18 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         else:
             for species_id in species_list:
                 for species in self._ensembl_species:
-                    if species_id == species[self._CONFIG_REST_API_TAXON_ID]:
+                    if species_id == species[self.CONFIG_REST_API_TAXON_ID]:
                         self.get_logger().debug(
-                            "Downloading the data for the specie -- " + species[self._CONFIG_REST_API_TAXON_ID])
-                        if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_PROTEIN]:
+                            "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
                             files = self.get_pep_files(species)
-                        if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_GTF]:
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
                             gtf_files = self.get_gtf_files(species)
                             files.extend(gtf_files)
-                        if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_CDS]:
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
                             cds_files = self.get_cds_files(species)
                             files.extend(cds_files)
-                        if not self.get_pipeline_parameters()[self._CONFIG_KEY_SKIP_NCRNA]:
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
                             ncrna_files = self.get_ncrna_files(species)
                             files.extend(ncrna_files)
                         total_files.extend(files)
@@ -146,8 +146,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.cds.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
             file_url = '{}/release-{}/fasta/{}/cds/{}'.format(
-                self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_ENSEMBL_FTP][
-                    self._CONFIG_KEY_BASE_URL],
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                    self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
             files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
         except KeyError:
@@ -165,8 +165,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.ncrna.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
             file_url = '{}/release-{}/fasta/{}/ncrna/{}'.format(
-                self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_ENSEMBL_FTP][
-                    self._CONFIG_KEY_BASE_URL],
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                    self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
             files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
         except KeyError:
@@ -184,8 +184,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.pep.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
             file_url = '{}/release-{}/fasta/{}/pep/{}'.format(
-                self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_ENSEMBL_FTP][
-                    self._CONFIG_KEY_BASE_URL],
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                    self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
             files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
         except KeyError:
@@ -207,8 +207,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
                                                  species['release'], )
             file_url = '{}/release-{}/gtf/{}/{}'.format(
-                self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_KEY_ENSEMBL_FTP][
-                    self._CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                    self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
             files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
         except KeyError:
             self.get_logger().debug("No valid info is available species: ", species)

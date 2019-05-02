@@ -6,14 +6,15 @@ from toolbox.general import ParameterConfiguration, check_create_folders
 
 
 class CosmicDownloadService(ParameterConfiguration):
-    _CONFIG_KEY_DATA_DOWNLOADER = 'cosmic_data_downloader'
-    _CONFIG_OUTPUT_DIRECTORY = 'output_directory'
-    _CONFIG_COSMIC_SERVER = 'cosmic_server'
-    _CONFIG_COSMIC_FTP_URL = 'cosmic_ftp'
-    _CONFIG_COSMIC_FTP_USER = "cosmic_user"
-    _CONFIG_COSMIC_FTP_PASSWORD = "cosmic_password"
-    _CONFIG_COSMIC_MUTATIONS_URL = "mutations_url"
-    _CONFIG_COSMIC_MUTATIONS_FILE = "mutations_file"
+
+    CONFIG_KEY_DATA_DOWNLOADER = 'cosmic_data_downloader'
+    CONFIG_OUTPUT_DIRECTORY = 'output_directory'
+    CONFIG_COSMIC_SERVER = 'cosmic_server'
+    CONFIG_COSMIC_FTP_URL = 'cosmic_ftp'
+    CONFIG_COSMIC_FTP_USER = "cosmic_user"
+    CONFIG_COSMIC_FTP_PASSWORD = "cosmic_password"
+    CONFIG_COSMIC_MUTATIONS_URL = "mutations_url"
+    CONFIG_COSMIC_MUTATIONS_FILE = "mutations_file"
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -21,13 +22,13 @@ class CosmicDownloadService(ParameterConfiguration):
         :param config_file configuration file
         :param pipeline_arguments pipelines arguments
         """
-        super(CosmicDownloadService, self).__init__(self._CONFIG_KEY_DATA_DOWNLOADER, config_file, pipeline_arguments)
+        super(CosmicDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file, pipeline_arguments)
 
-        if self._CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
-            self._local_path_cosmic = self.get_pipeline_parameters()[self._CONFIG_OUTPUT_DIRECTORY]
+        if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
+            self._local_path_cosmic = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
         else:
-            self._local_path_cosmic = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][
-                self._CONFIG_OUTPUT_DIRECTORY]
+            self._local_path_cosmic = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                self.CONFIG_OUTPUT_DIRECTORY]
 
         self._cosmic_token = base64.b64encode(
             f'{self.get_pipeline_parameters()[self._CONFIG_COSMIC_FTP_USER]}:{self.get_pipeline_parameters()[self._CONFIG_COSMIC_FTP_PASSWORD]}'.encode()).decode(
@@ -53,12 +54,12 @@ class CosmicDownloadService(ParameterConfiguration):
 
         output_file = f'{self.get_local_path_root_cosmic_repo()}/{self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_COSMIC_SERVER][self._CONFIG_COSMIC_MUTATIONS_FILE]}'
 
-        server = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_COSMIC_SERVER][
-            self._CONFIG_COSMIC_FTP_URL]
-        cosmic_version = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_COSMIC_SERVER][
-            self._CONFIG_COSMIC_MUTATIONS_URL]
-        mutation_file = self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_COSMIC_SERVER][
-            self._CONFIG_COSMIC_MUTATIONS_FILE]
+        server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
+            self.CONFIG_COSMIC_FTP_URL]
+        cosmic_version = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
+            self.CONFIG_COSMIC_MUTATIONS_URL]
+        mutation_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
+            self.CONFIG_COSMIC_MUTATIONS_FILE]
         url = f'{server}/{cosmic_version}/{mutation_file}'
 
         token = f'Basic {self._cosmic_token}'
