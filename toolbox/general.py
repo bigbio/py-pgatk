@@ -30,6 +30,7 @@ class ParameterConfiguration:
     _CONFIG_LOGGER_FORMATTER = 'formatters'
     _CONFIG_LOGGER_LEVEL = 'loglevel'
 
+
     def __init__(self, root_config_name, yaml_configuration_file, pipeline_parameters):
         """
         This function creates a parameter structure from a yaml config file and the pipeline paramters provdided

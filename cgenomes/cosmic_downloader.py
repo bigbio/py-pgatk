@@ -6,8 +6,7 @@ from toolbox.general import ParameterConfiguration, check_create_folders
 
 
 class CosmicDownloadService(ParameterConfiguration):
-
-    CONFIG_KEY_DATA_DOWNLOADER = 'cosmic_data_downloader'
+    CONFIG_KEY_DATA_DOWNLOADER = 'cosmic_data'
     CONFIG_OUTPUT_DIRECTORY = 'output_directory'
     CONFIG_COSMIC_SERVER = 'cosmic_server'
     CONFIG_COSMIC_FTP_URL = 'cosmic_ftp'
@@ -15,6 +14,7 @@ class CosmicDownloadService(ParameterConfiguration):
     CONFIG_COSMIC_FTP_PASSWORD = "cosmic_password"
     CONFIG_COSMIC_MUTATIONS_URL = "mutations_url"
     CONFIG_COSMIC_MUTATIONS_FILE = "mutations_file"
+    CONFIG_COSMIC_CDS_GENES_FILE = "all_cds_genes_file"
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -31,7 +31,7 @@ class CosmicDownloadService(ParameterConfiguration):
                 self.CONFIG_OUTPUT_DIRECTORY]
 
         self._cosmic_token = base64.b64encode(
-            f'{self.get_pipeline_parameters()[self._CONFIG_COSMIC_FTP_USER]}:{self.get_pipeline_parameters()[self._CONFIG_COSMIC_FTP_PASSWORD]}'.encode()).decode(
+            f'{self.get_pipeline_parameters()[self.CONFIG_COSMIC_FTP_USER]}:{self.get_pipeline_parameters()[self.CONFIG_COSMIC_FTP_PASSWORD]}'.encode()).decode(
             'utf-8')
 
         self.prepare_local_cosmic_repository()
@@ -52,7 +52,8 @@ class CosmicDownloadService(ParameterConfiguration):
         :return: None
         """
 
-        output_file = f'{self.get_local_path_root_cosmic_repo()}/{self.get_default_parameters()[self._CONFIG_KEY_DATA_DOWNLOADER][self._CONFIG_COSMIC_SERVER][self._CONFIG_COSMIC_MUTATIONS_FILE]}'
+        mutation_output_file = f'{self.get_local_path_root_cosmic_repo()}/{self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_MUTATIONS_FILE]}'
+        cds_genes_output_file = f'{self.get_local_path_root_cosmic_repo()}/{self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CDS_GENES_FILE]}'
 
         server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_FTP_URL]
@@ -60,20 +61,35 @@ class CosmicDownloadService(ParameterConfiguration):
             self.CONFIG_COSMIC_MUTATIONS_URL]
         mutation_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_MUTATIONS_FILE]
-        url = f'{server}/{cosmic_version}/{mutation_file}'
+
+        all_cds_gene_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
+            self.CONFIG_COSMIC_CDS_GENES_FILE]
+
+        mutation_url = f'{server}/{cosmic_version}/{mutation_file}'
+        cds_gene_url = f'{server}/{cosmic_version}/{all_cds_gene_file}'
 
         token = f'Basic {self._cosmic_token}'
-        response = requests.get(url, stream=True, headers={'Authorization': token})
+        self.download_file_cosmic(mutation_url, mutation_output_file, token)
+        self.download_file_cosmic(cds_gene_url, cds_genes_output_file, token)
 
+    def download_file_cosmic(self, url, local_file, token):
+        """
+        Download file from cosmic repository using requests
+        :param url: url of the file to be download
+        :param local_file: local file
+        :param token: token to be used
+        :return:
+        """
+
+        response = requests.get(url, stream=True, headers={'Authorization': token})
         if response.status_code == 200:
             url = json.loads(response.text)['url']
             msg = "Downloading file from url '{}'".format(url)
             self.get_logger().debug(msg)
 
             response = requests.get(url, stream=True)
-
             if response.status_code == 200:
-                with open(output_file, 'wb') as f:
+                with open(local_file, 'wb') as f:
                     f.write(response.content)
-                    msg = "Download Finish for file '{}'".format(output_file)
+                    msg = "Download Finish for file '{}'".format(local_file)
                     self.get_logger().debug(msg)

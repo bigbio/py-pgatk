@@ -1,0 +1,18 @@
+
+
+class SNP(object):
+
+    def __init__(self,gene=None,mRNA=None,dna_mut=None,aa_mut=None,type=None):
+        """
+        Default constructor of SNP
+        :param gene:
+        :param mRNA:
+        :param dna_mut:
+        :param aa_mut:
+        :param type:
+        """
+        self.gene=gene
+        self.mRNA=mRNA
+        self.aa_mut=aa_mut
+        self.type=type
+        self.dna_mut=dna_mut

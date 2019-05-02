@@ -8,6 +8,7 @@ import logging
 import click
 
 from cgenomes.cbioportal_downloader import CbioPortalDownloadService
+from cgenomes.cgenomes_proteindb import CancerGenomesService
 from cgenomes.cosmic_downloader import CosmicDownloadService
 from ensembl.data_downloader import EnsemblDataDownloadService
 from toolbox.exceptions import AppConfigException
@@ -31,7 +32,7 @@ def cli():
     """This is the main tool that give access to all commands and options provided by the pypgatk"""
 
 
-@cli.command('ensembl-downloader', short_helper='Command to download the ensembl information')
+@cli.command('ensembl-downloader', short_help='Command to download the ensembl information')
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
@@ -137,7 +138,7 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
-              default='config/cosmic_downloader_config.yaml')
+              default='config/cosmic_config.yaml')
 @click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
@@ -166,9 +167,31 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password):
     else:
         print_help()
 
-    cosmic_downloader = CosmicDownloadService(config_file, pipeline_arguments)
+    cosmic_downloader_service = CosmicDownloadService(config_file, pipeline_arguments)
 
-    cosmic_downloader.download_mutation_file()
+    cosmic_downloader_service.download_mutation_file()
+
+
+@cli.command('cosmic-to-proteindb', short_help = 'Command to translate Cosmic mutation data into proteindb')
+@click.option('--config_file',
+              '-c',
+              help='Configuration file for the ensembl data downloader pipeline',
+              default='config/cosmic_config.yaml')
+@click.option('-in', '--input-mutation', help='Cosmic Mutation data file')
+@click.option('-fa', '--input-genes', help = 'All Cosmic genes')
+@click.option('-out', '--output-db', help = 'Protein database including all the mutations')
+@click.pass_context
+def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db):
+    if input_mutation is None or input_genes is None or  output_db is None:
+        print_help()
+
+    pipeline_arguments = {}
+    pipeline_arguments[CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE] = input_mutation
+    pipeline_arguments[CancerGenomesService.CONFIG_COMPLETE_GENES_FILE] = input_genes
+    pipeline_arguments[CancerGenomesService.CONFIG_OUTPUT_FILE] = output_db
+
+    cosmic_to_proteindb_service = CancerGenomesService(config_file, pipeline_arguments)
+    cosmic_to_proteindb_service.cosmic_to_proteindb()
 
 
 if __name__ == "__main__":

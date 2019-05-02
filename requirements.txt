@@ -1,4 +1,4 @@
 Click==7.0
-bio==0.1.0
 requests==2.21.0
 PyYAML==5.1
+biopython==1.73
