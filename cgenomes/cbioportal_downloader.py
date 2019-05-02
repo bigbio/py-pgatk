@@ -1,6 +1,6 @@
-from io import StringIO
-from requests import get
 import csv
+
+from requests import get
 
 from toolbox.exceptions import AppException
 from toolbox.general import ParameterConfiguration, check_create_folders, download_file

@@ -1,21 +1,25 @@
-import sys
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.Alphabet import generic_dna
-import re
 import getopt
+import re
+import sys
 
-if len(sys.argv[1:])<=1:  ### Indicates that there are insufficient number of command-line arguments
+from Bio import SeqIO
+
+if len(sys.argv[1:]) <= 1:  ### Indicates that there are insufficient number of command-line arguments
     print("Warning! wrong command!")
-    print("Example: python3 mutation2proteindb.py --input data_mutations_extended.txt --cds Ensembl75+90.human.cds.all.fa --output mutproteins.fa")
+    print(
+        "Example: python3 mutation2proteindb.py --input data_mutations_extended.txt --cds Ensembl75+90.human.cds.all.fa --output mutproteins.fa")
 else:
-    options, remainder = getopt.getopt(sys.argv[1:],'', ['input=','cds=','output='])
+    options, remainder = getopt.getopt(sys.argv[1:], '', ['input=', 'cds=', 'output='])
     for opt, arg in options:
-        if opt == '--input': input_file=arg
-        elif opt == '--output': output_file=arg
-        elif opt == '--cds': cds_file=arg
+        if opt == '--input':
+            input_file = arg
+        elif opt == '--output':
+            output_file = arg
+        elif opt == '--cds':
+            cds_file = arg
         else:
-            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt); sys.exit()
+            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt);
+            sys.exit()
 
 mutfile = open(input_file, "r")
 fafile = SeqIO.parse(cds_file, "fasta")
@@ -35,7 +39,7 @@ if f1[0] == "#":
 else:
     header = f1.strip().split("\t")
 
-#print(header)
+# print(header)
 pos_col = header.index("HGVSc")
 enst_col = header.index("Transcript_ID")
 

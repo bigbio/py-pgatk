@@ -6,11 +6,11 @@ Some of the use cases for this module:
     2. Given a species ID, collect its GTF data, with the option of decompressing it or not.
 """
 
-import os
-
 # App imports
 from json import loads
+
 from requests import get
+
 from toolbox.general import ParameterConfiguration, check_create_folders, download_file
 
 
@@ -163,7 +163,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         files = []
         try:
             file_name = '{}.{}.ncrna.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
-                                                     species['assembly'])
+                                                   species['assembly'])
             file_url = '{}/release-{}/fasta/{}/ncrna/{}'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],

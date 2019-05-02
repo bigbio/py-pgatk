@@ -102,7 +102,7 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
-              default='config/cbioportal_downloader_config.yaml')
+              default='config/cbioportal_config.yaml')
 @click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
@@ -172,26 +172,47 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password):
     cosmic_downloader_service.download_mutation_file()
 
 
-@cli.command('cosmic-to-proteindb', short_help = 'Command to translate Cosmic mutation data into proteindb')
+@cli.command('cosmic-to-proteindb', short_help='Command to translate Cosmic mutation data into proteindb')
 @click.option('--config_file',
               '-c',
-              help='Configuration file for the ensembl data downloader pipeline',
+              help='Configuration file for the cosmic data pipelines',
               default='config/cosmic_config.yaml')
 @click.option('-in', '--input-mutation', help='Cosmic Mutation data file')
-@click.option('-fa', '--input-genes', help = 'All Cosmic genes')
-@click.option('-out', '--output-db', help = 'Protein database including all the mutations')
+@click.option('-fa', '--input-genes', help='All Cosmic genes')
+@click.option('-out', '--output-db', help='Protein database including all the mutations')
 @click.pass_context
 def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db):
-    if input_mutation is None or input_genes is None or  output_db is None:
+    if input_mutation is None or input_genes is None or output_db is None:
+        print_help()
+
+    pipeline_arguments = {CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE: input_mutation,
+                          CancerGenomesService.CONFIG_COMPLETE_GENES_FILE: input_genes,
+                          CancerGenomesService.CONFIG_OUTPUT_FILE: output_db}
+
+    cosmic_to_proteindb_service = CancerGenomesService(config_file, pipeline_arguments)
+    cosmic_to_proteindb_service.cosmic_to_proteindb()
+
+
+@cli.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
+@click.option('--config_file',
+              '-c',
+              help='Configuration for ',
+              default='config/cbioportal_config.yaml')
+@click.option('-in', '--input-mutation', help='Cbioportal mutation file')
+@click.option('-fa', '--input-cds', help='CDS genes from ENSEMBL database')
+@click.option('-out', '--output-db', help='Protein database including all the mutations')
+@click.pass_context
+def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_db):
+    if input_mutation is None or input_cds is None or output_db is None:
         print_help()
 
     pipeline_arguments = {}
     pipeline_arguments[CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE] = input_mutation
-    pipeline_arguments[CancerGenomesService.CONFIG_COMPLETE_GENES_FILE] = input_genes
+    pipeline_arguments[CancerGenomesService.CONFIG_COMPLETE_GENES_FILE] = input_cds
     pipeline_arguments[CancerGenomesService.CONFIG_OUTPUT_FILE] = output_db
 
     cosmic_to_proteindb_service = CancerGenomesService(config_file, pipeline_arguments)
-    cosmic_to_proteindb_service.cosmic_to_proteindb()
+    cosmic_to_proteindb_service.cbioportal_to_proteindb()
 
 
 if __name__ == "__main__":
