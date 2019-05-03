@@ -46,22 +46,22 @@ Usage: pypgatk.py ensembl-downloader [OPTIONS]
   This tool enables to download from enseml ftp the FASTA and GTF files
 
 Options:
-  -c, --config_file TEXT          Configuration file for the ensembl data
+  -c, --config-file TEXT          Configuration file for the ensembl data
                                   downloader pipeline
-  -o, --output_directory TEXT     Output directory for the peptide databases
-  -fp, --folder_prefix_release TEXT
+  -o, --output-directory TEXT     Output directory for the peptide databases
+  -fp, --folder-prefix-release TEXT
                                   Output folder prefix to download the data
   -t, --taxonomy TEXT             Taxonomy List (comma separated) that will be
                                   use to download the data from Ensembl
-  -sg, --skip_gtf                 Skip the gtf file during the download
-  -sp, --skip_protein             Skip the protein fasta file during download
-  -sc, --skip_cds                 Skip the CDS file download
-  -snr, --skip_ncrna              Skip the ncRNA file download
+  -sg, --skip-gtf                 Skip the gtf file during the download
+  -sp, --skip-protein             Skip the protein fasta file during download
+  -sc, --skip-cds                 Skip the CDS file download
+  -snr, --skip-ncrna              Skip the ncRNA file download
   -h, --help                      Show this message and exit.
 
 ```
 
-Each of the file types can be skip using the corresponding option. For example, if the user do not want to download the the protein sequence fasta file, it can be skip by using the argument `pypgatk.py ensembl-downloader --skip_protein`
+Each of the file types can be skip using the corresponding option. For example, if the user do not want to download the the protein sequence fasta file, it can be skip by using the argument `pypgatk.py ensembl-downloader --skip-protein`
 
 #### Downloading COSMIC data.
 
@@ -75,15 +75,10 @@ $: python3.7 pypgatk.py cosmic-downloader -h
 Usage: pypgatk.py cosmic-downloader [OPTIONS]
 
 Options:
-  -c, --config_file TEXT       Configuration file for the ensembl data
-                               downloader pipeline
-  -o, --output_directory TEXT  Output directory for the peptide databases
-  -u, --username TEXT          Username for cosmic database -- please if you
-                               don't have one register here
-                               (https://cancer.sanger.ac.uk/cosmic/register)
-  -p, --password TEXT          Password for cosmic database -- please if you
-                               don't have one register here
-                               (https://cancer.sanger.ac.uk/cosmic/register)
+  -c, --config-file TEXT       Configuration file for the ensembl data downloader pipeline
+  -o, --output-directory TEXT  Output directory for the peptide databases
+  -u, --username TEXT          Username for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
+  -p, --password TEXT          Password for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
   -h, --help                   Show this message and exit.
 
 ```
@@ -100,19 +95,46 @@ $: python3.7 pypgatk.py cbioportal-downloader -h
 Usage: pypgatk.py cbioportal-downloader [OPTIONS]
 
 Options:
-  -c, --config_file TEXT       Configuration file for the ensembl data
+  -c, --config-file TEXT       Configuration file for the ensembl data
                                downloader pipeline
-  -o, --output_directory TEXT  Output directory for the peptide databases
-  -l, --list_studies           Print the list of all the studies in cBioPortal
+  -o, --output-directory TEXT  Output directory for the peptide databases
+  -l, --list-studies           Print the list of all the studies in cBioPortal
                                (https://www.cbioportal.org)
-  -d, --download_study TEXT    Download an specific Study from cBioPortal --
+  -d, --download-study TEXT    Download an specific Study from cBioPortal --
                                (all to download all studies)
   -h, --help                   Show this message and exit.
 
 ```
 
-The argument `-l` (`--list_studies`) allow the users to list all the studies store in cBioPortal. If the user is interested in only one study, it can use the argument `-d` (`--download_study`).
+The argument `-l` (`--list-studies`) allow the users to list all the studies store in cBioPortal. If the user is interested in only one study, it can use the argument `-d` (`--download-study`).
 
+From Genome information to protein sequence databases
+----------------------------
+
+The pypgatk framework provides a set of tools (COMMAND) to convert genome mutation and variant databases to protein sequence databases (FASTA). In order to perform this task, we have implemented multiple commands depending on the mutation provider (cBioPortal or COSMIC).
+
+#### Cosmic Mutations to Proitein sequences
+
+[COSMIC](https://cancer.sanger.ac.uk/cosmic/) – the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers.
+
+The current tool use the command `cosmic-to-proteindb` to convert the cosmic somatic mutations file into a protein sequence database file.
+
+```bash
+$: python3.7 pypgatk.py cosmic-to-proteindb -h
+Usage: pypgatk.py cosmic-to-proteindb [OPTIONS]
+
+Options:
+  -c, --config-file TEXT      Configuration file for the cosmic data pipelines
+  -in, --input-mutation TEXT  Cosmic Mutation data file
+  -fa, --input-genes TEXT     All Cosmic genes
+  -out, --output-db TEXT      Protein database including all the mutations
+  -h, --help                  Show this message and exit.
+
+```
+
+The file input of the tool `-in` (`--input-mutation`) is the cosmic mutation data file. The genes file `-fa` (`--input-genes`) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
+
+The output of the tool is a protein fasta file and will be written in the following path `-out` (--output-db)
 
 
 Contributions

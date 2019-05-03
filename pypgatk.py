@@ -33,25 +33,25 @@ def cli():
 
 
 @cli.command('ensembl-downloader', short_help='Command to download the ensembl information')
-@click.option('--config_file',
+@click.option('--config-file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
               default='config/ensembl_downloader_config.yaml')
-@click.option('--output_directory',
+@click.option('--output-directory',
               '-o',
               help='Output directory for the peptide databases',
               default="./database_ensembl/")
-@click.option('--folder_prefix_release',
+@click.option('--folder-prefix-release',
               '-fp', help='Output folder prefix to download the data',
               default='release-')
 @click.option('--taxonomy',
               '-t',
               help='Taxonomy List (comma separated) that will be use to download the data from Ensembl',
               default='')
-@click.option('--skip_gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
-@click.option('--skip_protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
-@click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
-@click.option('--skip_ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
+@click.option('--skip-gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
+@click.option('--skip-protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
+@click.option('--skip-cds', '-sc', help='Skip the CDS file download', is_flag=True)
+@click.option('--skip-ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
 @click.pass_context
 def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release, taxonomy, skip_gtf,
                        skip_protein, skip_cds, skip_ncrna):
@@ -99,17 +99,17 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
 
 
 @cli.command('cbioportal-downloader', short_help=' Command to download the the cbioportal studies')
-@click.option('--config_file',
+@click.option('--config-file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
               default='config/cbioportal_config.yaml')
-@click.option('--output_directory',
+@click.option('--output-directory',
               '-o',
               help='Output directory for the peptide databases',
               default="./database_cbioportal/")
-@click.option('--list_studies', '-l',
+@click.option('--list-studies', '-l',
               help='Print the list of all the studies in cBioPortal (https://www.cbioportal.org)', is_flag=True)
-@click.option('--download_study', '-d',
+@click.option('--download-study', '-d',
               help="Download an specific Study from cBioPortal -- (all to download all studies)")
 @click.pass_context
 def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study):
@@ -135,11 +135,11 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
 
 
 @cli.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
-@click.option('--config_file',
+@click.option('--config-file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
               default='config/cosmic_config.yaml')
-@click.option('--output_directory',
+@click.option('--output-directory',
               '-o',
               help='Output directory for the peptide databases',
               default="./database_cosmic/")
@@ -173,7 +173,7 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password):
 
 
 @cli.command('cosmic-to-proteindb', short_help='Command to translate Cosmic mutation data into proteindb')
-@click.option('--config_file',
+@click.option('--config-file',
               '-c',
               help='Configuration file for the cosmic data pipelines',
               default='config/cosmic_config.yaml')
@@ -194,7 +194,7 @@ def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db
 
 
 @cli.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
-@click.option('--config_file',
+@click.option('--config-file',
               '-c',
               help='Configuration for ',
               default='config/cbioportal_config.yaml')
