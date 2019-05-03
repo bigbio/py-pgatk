@@ -4,6 +4,7 @@ ensembl_data_downloader:
   skip_protein: False
   skip_cds: False
   skip_ncrna: False
+  skip_vcf: False
   ensembl_ftp:
     base_url: ftp://ftp.ensembl.org/pub
   rewrite_local_path_ensembl_repo: 'False'

@@ -33,28 +33,29 @@ def cli():
 
 
 @cli.command('ensembl-downloader', short_help='Command to download the ensembl information')
-@click.option('--config-file',
+@click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
               default='config/ensembl_downloader_config.yaml')
-@click.option('--output-directory',
+@click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
               default="./database_ensembl/")
-@click.option('--folder-prefix-release',
+@click.option('--folder_prefix_release',
               '-fp', help='Output folder prefix to download the data',
               default='release-')
 @click.option('--taxonomy',
               '-t',
               help='Taxonomy List (comma separated) that will be use to download the data from Ensembl',
               default='')
-@click.option('--skip-gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
-@click.option('--skip-protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
-@click.option('--skip-cds', '-sc', help='Skip the CDS file download', is_flag=True)
-@click.option('--skip-ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
+@click.option('--skip_gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
+@click.option('--skip_protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
+@click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
+@click.option('--skip_ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
+@click.option('--skip_vcf', '-vcf', help='Skip the VCF variant file', is_flag=True)
 @click.pass_context
 def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release, taxonomy, skip_gtf,
-                       skip_protein, skip_cds, skip_ncrna):
+                       skip_protein, skip_cds, skip_ncrna, skip_vcf):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     if config_file is None:
@@ -99,17 +100,17 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
 
 
 @cli.command('cbioportal-downloader', short_help=' Command to download the the cbioportal studies')
-@click.option('--config-file',
+@click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
               default='config/cbioportal_config.yaml')
-@click.option('--output-directory',
+@click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
               default="./database_cbioportal/")
-@click.option('--list-studies', '-l',
+@click.option('--list_studies', '-l',
               help='Print the list of all the studies in cBioPortal (https://www.cbioportal.org)', is_flag=True)
-@click.option('--download-study', '-d',
+@click.option('--download_study', '-d',
               help="Download an specific Study from cBioPortal -- (all to download all studies)")
 @click.pass_context
 def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study):
@@ -135,11 +136,11 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
 
 
 @cli.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
-@click.option('--config-file',
+@click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
               default='config/cosmic_config.yaml')
-@click.option('--output-directory',
+@click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
               default="./database_cosmic/")
@@ -173,13 +174,13 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password):
 
 
 @cli.command('cosmic-to-proteindb', short_help='Command to translate Cosmic mutation data into proteindb')
-@click.option('--config-file',
+@click.option('--config_file',
               '-c',
               help='Configuration file for the cosmic data pipelines',
               default='config/cosmic_config.yaml')
-@click.option('-in', '--input-mutation', help='Cosmic Mutation data file')
-@click.option('-fa', '--input-genes', help='All Cosmic genes')
-@click.option('-out', '--output-db', help='Protein database including all the mutations')
+@click.option('-in', '--input_mutation', help='Cosmic Mutation data file')
+@click.option('-fa', '--input_genes', help='All Cosmic genes')
+@click.option('-out', '--output_db', help='Protein database including all the mutations')
 @click.pass_context
 def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db):
     if input_mutation is None or input_genes is None or output_db is None:
@@ -194,13 +195,13 @@ def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db
 
 
 @cli.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
-@click.option('--config-file',
+@click.option('--config_file',
               '-c',
-              help='Configuration for ',
+              help='Configuration for cbioportal to proteindb tool',
               default='config/cbioportal_config.yaml')
-@click.option('-in', '--input-mutation', help='Cbioportal mutation file')
-@click.option('-fa', '--input-cds', help='CDS genes from ENSEMBL database')
-@click.option('-out', '--output-db', help='Protein database including all the mutations')
+@click.option('-in', '--input_mutation', help='Cbioportal mutation file')
+@click.option('-fa', '--input_cds', help='CDS genes from ENSEMBL database')
+@click.option('-out', '--output_db', help='Protein database including all the mutations')
 @click.pass_context
 def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_db):
     if input_mutation is None or input_cds is None or output_db is None:
