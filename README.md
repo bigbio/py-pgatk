@@ -90,15 +90,29 @@ Options:
 
 __Note: In order to be able to download COSMIC data, the user should provide a user and password. Please first register in COSMIC database (https://cancer.sanger.ac.uk/cosmic/register).__
 
-This tool always download both files.
-
 #### Downloading cBioPortal data.
 
+Downloading mutation data from [cBioPortal](https://www.cbioportal.org/) is performed using the command `cbioportal-downloader`. cBioPortal store multiple studies (https://www.cbioportal.org/datasets) containing mutation data. Currently is not possible to search the studies by PubMedID, only can be search by study_id.
 
-- Cbioportal `Study` data downloader
-- Custom protein database generation from Genomics Cancer mutation datasets:
-     - CBioportal (https://www.cbioportal.org/)
-     - COSMIC (https://cancer.sanger.ac.uk/cosmic)
+```bash
+
+$: python3.7 pypgatk.py cbioportal-downloader -h
+Usage: pypgatk.py cbioportal-downloader [OPTIONS]
+
+Options:
+  -c, --config_file TEXT       Configuration file for the ensembl data
+                               downloader pipeline
+  -o, --output_directory TEXT  Output directory for the peptide databases
+  -l, --list_studies           Print the list of all the studies in cBioPortal
+                               (https://www.cbioportal.org)
+  -d, --download_study TEXT    Download an specific Study from cBioPortal --
+                               (all to download all studies)
+  -h, --help                   Show this message and exit.
+
+```
+
+The argument `-l` (`--list_studies`) allow the users to list all the studies store in cBioPortal. If the user is interested in only one study, it can use the argument `-d` (`--download_study`).
+
 
 
 Contributions
