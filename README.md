@@ -28,7 +28,7 @@ Data downloader
 
 The `Data downloader` is a set of `COMMANDs` to download data from different Genomics data providers such as ENSEMBL, COSMIC or cBioPortal.
 
-#### Downloading data ENSEMBL database.
+#### Downloading ENSEMBL data.
 
 Downloading data from [ENSEMBL](https://www.ensembl.org/info/data/ftp/index.html) can be done using the command `ensembl-downloader`. The current tool enables to download the following files for each taxonomy:
 
@@ -63,10 +63,38 @@ Options:
 
 Each of the file types can be skip using the corresponding option. For example, if the user do not want to download the the protein sequence fasta file, it can be skip by using the argument `pypgatk.py ensembl-downloader --skip_protein`
 
+#### Downloading COSMIC data.
 
-- Cosmic data downloader
+Downloading mutation data from [COSMIC](https://cancer.sanger.ac.uk/cosmic) is performed using the COMMAND ` cosmic-downloader`. The current COMMAND allows users to download the following files:
+
 - Cosmic mutation file (CosmicMutantExport)
 - Cosmic all genes (All_COSMIC_Genes)
+
+```bash
+$: python3.7 pypgatk.py cosmic-downloader -h
+Usage: pypgatk.py cosmic-downloader [OPTIONS]
+
+Options:
+  -c, --config_file TEXT       Configuration file for the ensembl data
+                               downloader pipeline
+  -o, --output_directory TEXT  Output directory for the peptide databases
+  -u, --username TEXT          Username for cosmic database -- please if you
+                               don't have one register here
+                               (https://cancer.sanger.ac.uk/cosmic/register)
+  -p, --password TEXT          Password for cosmic database -- please if you
+                               don't have one register here
+                               (https://cancer.sanger.ac.uk/cosmic/register)
+  -h, --help                   Show this message and exit.
+
+```
+
+__Note: In order to be able to download COSMIC data, the user should provide a user and password. Please first register in COSMIC database (https://cancer.sanger.ac.uk/cosmic/register).__
+
+This tool always download both files.
+
+#### Downloading cBioPortal data.
+
+
 - Cbioportal `Study` data downloader
 - Custom protein database generation from Genomics Cancer mutation datasets:
      - CBioportal (https://www.cbioportal.org/)
