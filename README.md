@@ -136,6 +136,27 @@ The file input of the tool `-in` (`--input-mutation`) is the cosmic mutation dat
 
 The output of the tool is a protein fasta file and will be written in the following path `-out` (--output-db)
 
+#### cBioPortal Mutations to Proitein sequences
+
+The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. All datasets can be viewed in this web page (https://www.cbioportal.org/datasets).
+
+The current tool use the command `cbioportal-to-proteindb` to convert the bcioportal mutations file into a protein sequence database file.
+
+```bash
+$: python3.7 pypgatk.py cbioportal-to-proteindb -h
+Usage: pypgatk.py cbioportal-to-proteindb [OPTIONS]
+
+Options:
+  -c, --config-file TEXT      Configuration for
+  -in, --input-mutation TEXT  Cbioportal mutation file
+  -fa, --input-cds TEXT       CDS genes from ENSEMBL database
+  -out, --output-db TEXT      Protein database including all the mutations
+  -h, --help                  Show this message and exit.
+```
+
+The file input of the tool `-in` (`--input-mutation`) is the cbioportal mutation data file. The CDS sequence for all genes input file `-fa` (`--input-genes`) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the `ensembl-downloader` command.
+
+The output of the tool is a protein fasta file and will be written in the following path `-out` (--output-db)
 
 Contributions
 -----------------------
