@@ -1,7 +1,5 @@
 import sys
-from Bio import Seq,SeqIO
-from Bio.Alphabet import IUPAC
-import os
+from Bio import SeqIO
 import getopt
 
 table = 1

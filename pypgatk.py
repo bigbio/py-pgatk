@@ -11,6 +11,7 @@ from cgenomes.cbioportal_downloader import CbioPortalDownloadService
 from cgenomes.cgenomes_proteindb import CancerGenomesService
 from cgenomes.cosmic_downloader import CosmicDownloadService
 from ensembl.data_downloader import EnsemblDataDownloadService
+from ensembl.ensembl import EnsemblDataService
 from toolbox.exceptions import AppConfigException
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -214,6 +215,26 @@ def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_
 
     cosmic_to_proteindb_service = CancerGenomesService(config_file, pipeline_arguments)
     cosmic_to_proteindb_service.cbioportal_to_proteindb()
+
+
+@cli.command('threeframe-translation', short_help="Command to perform 3'frame translation")
+@click.option('--config_file',
+              '-c',
+              help='Configuration to perform conversion between ENSEMBL Files',
+              default='config/ensembl_config.yaml')
+@click.option('-in', '--input', help='input file to perform the translation')
+@click.option('-t', '--translation_table', help='Translation table default value 1', default='1')
+@click.option('-out', '--output', help='Output File')
+@click.pass_context
+def threeframe_trasnlation(ctx, config_file, input, translation_table, output):
+    if input is None or output is None:
+        print_help()
+
+    pipeline_arguments = {}
+    pipeline_arguments[EnsemblDataService.CONFIG_TRANSLATION_TABLE] = translation_table
+
+    ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
+    ensembl_data_service.three_frame_translation(input, output)
 
 
 if __name__ == "__main__":
