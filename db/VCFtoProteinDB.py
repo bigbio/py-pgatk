@@ -11,7 +11,7 @@ import gffutils
 
 def parse_commandline_args():
     
-    parser = argparse.ArgumentParser(description='Generate peptide databases based on RNA-seq data')
+    parser = argparse.ArgumentParser(description='Generate peptides based on DNA variants (VCF)')
     
     #reference annotations and genome files
     parser.add_argument('--genome_fasta', help='path to the genome sequence', required=True)
@@ -29,7 +29,7 @@ def parse_commandline_args():
     parser.add_argument('--report_ref_seq', action='store_const', const=True, help='in addition to var peps, also report all ref peps')
     parser.add_argument('--proteindb_output_file', default = "peps.fa", help="output file name, exits if already exists")
     
-    #vcf info fields
+    #vcf info fields and filters
     parser.add_argument('--annotation_field_name', default = "CSQ", help="annotation field name found in the INFO column, e.g CSQ or vep")
     parser.add_argument('--AF_field', default = "MAF", help="field name in the VCF INFO column to use for filtering on AF")
     parser.add_argument('--af_threshold', default=0.01, type=float, help='minium AF threshold for considering common variants')
@@ -42,7 +42,9 @@ def parse_commandline_args():
                                                                            'upstream_gene_variant', 'intergenic_variant', 
                                                                            'intron_variant', 'synonymous_variant'], 
                                                                            help="excluded_consequences")
-    parser.add_argument('--included_biotypes', nargs='+', default = ['protein_coding'], help="included_biotypes, default protein_coding")
+    parser.add_argument('--skip_including_all_CDSs', action='store_const', const=True, help="by default any transcript that has a defined CDS will be used, this option disables this features instead it only depends on the biotypes")
+    parser.add_argument('--included_biotypes', nargs='*', default = [], 
+                        help="included_biotypes")
     parser.add_argument('--included_consequences', nargs='+', default = ['all'], help="included_consequences, default all")
     #GTF params
     parser.add_argument('--biotype_str', default='transcript_biotype', type=str, help='string used to identify gene/transcript biotype in the gtf file.')
@@ -85,7 +87,7 @@ def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, 
     the given sequence in the fasta file represents all exons of the transcript combined.
     for protein coding genes, the CDS is specified therefore the sequence position has to be 
     calculated based on the CDS's positions
-    However, for non-protein coding genes, the whole sequence should be used
+    However, for non-protein coding genes, the whole sequence is used
     """
     alt_seq = ""
     if len(cds_info)==2:
@@ -164,7 +166,7 @@ def get_orfs(ref_seq, alt_seq, trans_table, num_orfs=1):
     return ref_orfs, alt_orfs
     
     
-def get_peps_from_vcf(vep_annotated_vcf, 
+def get_protseq_from_vcf(vep_annotated_vcf, 
                       transcripts_fasta,  
                       gtf_db,
                       proteindb_output_file,  
@@ -173,6 +175,7 @@ def get_peps_from_vcf(vep_annotated_vcf,
                       annotation_field_name, consequence_index, transcript_index, 
                       biotype_str,
                       excluded_consequences, included_consequences, excluded_biotypes, included_biotypes,
+                      skip_including_all_CDSs,
                       var_prefix, report_ref_seq
                       ):
     """
@@ -258,8 +261,10 @@ def get_peps_from_vcf(vep_annotated_vcf,
                     ):
                     continue
                 
-                #only include features that have the specified biotypes
-                if (feature_biotype in excluded_biotypes or 
+                #only include features that have the specified biotypes or they have CDSs info
+                if 'CDS' in feature_types and not skip_including_all_CDSs:
+                    pass
+                elif (feature_biotype in excluded_biotypes or 
                     (feature_biotype not in included_biotypes and included_biotypes!=['all'])):
                     continue
                 
@@ -312,13 +317,14 @@ if __name__ == '__main__':
                                                     args.genome_fasta, 
                                                     args.gene_annotations_gtf.replace('.gtf', '.fasta'))
     "run VCF processor"
-    get_peps_from_vcf(args.vep_annotated_vcf, gtf_transcripts_fasta, gtf_db,
+    get_protseq_from_vcf(args.vep_annotated_vcf, gtf_transcripts_fasta, gtf_db,
                       args.proteindb_output_file,
                       args.nuclear_trans_table, args.mito_trans_table,
                       args.AF_field, args.af_threshold, 
                       args.annotation_field_name, args.consequence_index, args.transcript_index, 
                       args.biotype_str,
                       args.excluded_consequences, args.included_consequences, args.excluded_biotypes, args.included_biotypes,
+                      args.skip_including_all_CDSs,
                       args.var_prefix, args.report_ref_seq)
     
     
