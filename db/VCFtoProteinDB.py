@@ -100,7 +100,7 @@ def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, 
             total_len+= x[1]-x[0]+1 
         stop_coding_index = total_len#the features are sorted by end therefroe the end pos of the last item is the last coding nc
     
-    if strand == '-':#ge the correct orientation, because exons are oredered based on their position
+    if strand == '-':#get the correct orientation, because exons are oredered based on their position
         ref_seq = ref_seq[::-1] #in order to calculate from the first base of the first feature (sorted by genomic coordinates)
         ref_allele = ref_allele.complement() #the reverse will be done on return
         var_allele = var_allele.complement() #the reverse will be done on return
@@ -122,9 +122,8 @@ def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, 
                 
             feature_len = (feature[1]-feature[0]+1)
             nc_index+=feature_len
-            #feature_seq = coding_ref_seq[nc_index:nc_index+feature_len]
-            
-    return ref_seq, alt_seq
+    
+    return "", ""
     
     
 def parse_gtf(gtf_fn, gtf_db_file):
