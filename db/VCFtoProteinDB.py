@@ -2,12 +2,11 @@
 Translate VEP annotated variants from VCF file
 """
 
-import sys, os
+import sys
 from Bio import SeqIO
 from Bio.Seq import Seq
 import argparse
 import vcf
-import gffutils
 
 def parse_commandline_args():
     
@@ -15,10 +14,11 @@ def parse_commandline_args():
     
     #reference annotations and genome files
     parser.add_argument('--genome_fasta', help='path to the genome sequence', required=True)
+    parser.add_argument('--gtf_transcripts_fasta', help='path to the transcripts fasta (gtf converted fasta format)', required=True)
+    parser.add_argument('--gene_annotations_gtf', help='path to the gene annotations file', required=True)
     
     #input files
     parser.add_argument('--vep_annotated_vcf', help='path to the vep annotated VCF file', required=True)
-    parser.add_argument('--gene_annotations_gtf', help='path to the gene annotations file', required=True)
     
     #translation params
     parser.add_argument('--nuclear_trans_table', default=1, type=int, help='nuclear_trans_table (default 1)')
@@ -71,17 +71,6 @@ def check_overlap(var_start, var_end, features_info = [[0, 1, 'type']]):
     return False
 
 
-def generate_fasta_from_gtf(gtf_file, genome_fasta, fasta_output):
-    """use gffread to convert transcript coordinates to genome fasta sequences"""
-    if os.path.isfile(fasta_output):
-        return fasta_output
-    
-    cmd = "gffread -F -w {fasta_out} -g {genome_fasta} {gtf_file}".format(
-        fasta_out=fasta_output, genome_fasta=genome_fasta, gtf_file=gtf_file)
-    os.system(cmd)
-    return fasta_output
-
-
 def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, cds_info=[]):
     """
     the given sequence in the fasta file represents all exons of the transcript combined.
@@ -100,7 +89,7 @@ def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, 
             total_len+= x[1]-x[0]+1 
         stop_coding_index = total_len#the features are sorted by end therefroe the end pos of the last item is the last coding nc
     
-    if strand == '-':#ge the correct orientation, because exons are oredered based on their position
+    if strand == '-':#get the correct orientation, because exons are oredered based on their position
         ref_seq = ref_seq[::-1] #in order to calculate from the first base of the first feature (sorted by genomic coordinates)
         ref_allele = ref_allele.complement() #the reverse will be done on return
         var_allele = var_allele.complement() #the reverse will be done on return
@@ -122,9 +111,8 @@ def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, 
                 
             feature_len = (feature[1]-feature[0]+1)
             nc_index+=feature_len
-            #feature_seq = coding_ref_seq[nc_index:nc_index+feature_len]
-            
-    return ref_seq, alt_seq
+    
+    return "", ""
     
     
 def parse_gtf(gtf_fn, gtf_db_file):
@@ -312,12 +300,8 @@ if __name__ == '__main__':
     "generate an sqlite3 db from the GTF file"
     gtf_db  = parse_gtf(args.gene_annotations_gtf, 
                         args.gene_annotations_gtf.replace('.gtf', '.db') )
-    "convert GTF to fasta"
-    gtf_transcripts_fasta = generate_fasta_from_gtf(args.gene_annotations_gtf, 
-                                                    args.genome_fasta, 
-                                                    args.gene_annotations_gtf.replace('.gtf', '.fasta'))
     "run VCF processor"
-    get_protseq_from_vcf(args.vep_annotated_vcf, gtf_transcripts_fasta, gtf_db,
+    get_protseq_from_vcf(args.vep_annotated_vcf, args.gtf_transcripts_fasta, gtf_db,
                       args.proteindb_output_file,
                       args.nuclear_trans_table, args.mito_trans_table,
                       args.AF_field, args.af_threshold, 
