@@ -224,17 +224,81 @@ def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_
               default='config/ensembl_config.yaml')
 @click.option('-in', '--input', help='input file to perform the translation')
 @click.option('-t', '--translation_table', help='Translation table default value 1', default='1')
-@click.option('-out', '--output', help='Output File')
+@click.option('-out', '--output', help='Output File', default="peptide-database.fa")
 @click.pass_context
 def threeframe_trasnlation(ctx, config_file, input, translation_table, output):
-    if input is None or output is None:
+    if input is None:
+        print_help()
+
+    pipeline_arguments = {EnsemblDataService.CONFIG_TRANSLATION_TABLE: translation_table,
+                          EnsemblDataService.PROTEIN_DB_OUTPUT: output}
+
+    ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
+    ensembl_data_service.three_frame_translation(input)
+
+
+@cli.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants (VCF)")
+@click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
+              default='config/ensembl_config.yaml')
+@click.option('-gf', '--genome_fasta', help='Path to the genome sequence')
+@click.option('-va', '--vep_annotated_vcf', help='Path to the vep annotated VCF file')
+@click.option('-gtf', '--gene_annotated_gtf', help='Path to the gene annotations file')
+@click.option('-nt', '--nuclear_translation_table', default=1, type=int, help='Nuclear_trans_table (default 1)')
+@click.option('-mt', '--mito_translation_table', default=2, type=int, help='Mito_trans_table (default 2)')
+@click.option('-vp', '--var_prefix', default="var", help="String to add before the variant peptides")
+@click.option('-rr', '--report_ref_seq', action='store_const', const=True,
+              help='In addition to var peps, also report all ref peps')
+@click.option('-out', '--output_proteindb', default="peptide-database.fa",
+              help="Output file name, exits if already exists")
+@click.option('-afn', '--annotation_field_name', default="CSQ",
+              help="Annotation field name found in the INFO column, e.g CSQ or vep")
+@click.option('-aff', '--af_field', default="MAF", help="field name in the VCF INFO column to use for filtering on AF")
+@click.option('-aft', '--af_threshold', default=0.01, type=float,
+              help='minium AF threshold for considering common variants')
+@click.option('-ti', '--transcript_index', default=3, type=int,
+              help='index of transcript ID in the annotated columns (separated by |)')
+@click.option('-ci', '--consequence_index', default=1, type=int,
+              help='index of consequence in the annotated columns (separated by |)')
+@click.option('-eb', '--exclude_biotypes', nargs='*', default=[], help="excluded_biotypes")
+@click.option('-ec', '--exclude_consequences', nargs='*', default=['downstream_gene_variant',
+                                                                   'upstream_gene_variant', 'intergenic_variant',
+                                                                   'intron_variant', 'synonymous_variant'],
+              help="excluded_consequences")
+@click.option('-scds', '--skip_including_all_cds', action='store_const', const=True,
+              help="by default any transcript that has a defined CDS will be used, this option disables this features instead it only depends on the biotypes")
+@click.option('-ib', '--include_biotypes', nargs='*', default=[], help="include_biotypes")
+@click.option('-ic', '--include_consequences', nargs='+', default=['all'], help="included_consequences, default all")
+@click.option('-bs', '--biotype_str', default='transcript_biotype', type=str,
+              help='string used to identify gene/transcript biotype in the gtf file.')
+@click.pass_context
+def vcf_to_proteindb(ctx, config_file, genome_fasta, vep_annotated_vcf, gene_annotated_gtf, nuclear_translation_table,
+                     mito_translation_table, var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
+                     af_field,
+                     af_threshold, transcript_index, consequence_index, exclude_biotypes, exclude_consequences,
+                     skip_including_all_cds, include_biotypes, include_consequences, biotype_str):
+    if genome_fasta is None or vep_annotated_vcf is None or gene_annotated_gtf is None:
         print_help()
 
     pipeline_arguments = {}
-    pipeline_arguments[EnsemblDataService.CONFIG_TRANSLATION_TABLE] = translation_table
+    pipeline_arguments[EnsemblDataService.NUCLEAR_TRANSLATION_TABLE] = nuclear_translation_table
+    pipeline_arguments[EnsemblDataService.MITO_TRANSLATION_TABLE] = mito_translation_table
+    pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
+    pipeline_arguments[EnsemblDataService.REPORT_REFERENCE_SEQ] = report_ref_seq
+    pipeline_arguments[EnsemblDataService.PROTEIN_DB_OUTPUT] = output_proteindb
+    pipeline_arguments[EnsemblDataService.ANNOTATION_FIELD_NAME] = annotation_field_name
+    pipeline_arguments[EnsemblDataService.AF_FIELD] = af_field
+    pipeline_arguments[EnsemblDataService.AF_THRESHOLD] = af_threshold
+    pipeline_arguments[EnsemblDataService.TRANSCRIPT_INDEX] = transcript_index
+    pipeline_arguments[EnsemblDataService.CONSEQUENCE_INDEX] = consequence_index
+    pipeline_arguments[EnsemblDataService.EXCLUDE_BIOTYPES] = exclude_biotypes
+    pipeline_arguments[EnsemblDataService.EXCLUDE_CONSEQUENCES] = exclude_consequences
+    pipeline_arguments[EnsemblDataService.SKIP_INCLUDING_ALL_CDS] = skip_including_all_cds
+    pipeline_arguments[EnsemblDataService.INCLUDE_BIOTYPES] = include_biotypes
+    pipeline_arguments[EnsemblDataService.INCLUDE_CONSEQUENCES] = include_consequences
+    pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.three_frame_translation(input, output)
+    ensembl_data_service.vcf_to_proteindb(vep_annotated_vcf, genome_fasta, gene_annotated_gtf)
 
 
 if __name__ == "__main__":
