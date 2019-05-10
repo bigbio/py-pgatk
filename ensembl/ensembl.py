@@ -1,5 +1,3 @@
-import os
-
 import gffutils
 import vcf
 from Bio import SeqIO
@@ -10,7 +8,6 @@ from toolbox.general import ParameterConfiguration
 
 
 class EnsemblDataService(ParameterConfiguration):
-    NUCLEAR_TRANSLATION_TABLE = "nuclear_translation_table"
     CONFIG_KEY_VCF = "ensembl_vcf_proteindb"
     MITO_TRANSLATION_TABLE = "mito_translation_table"
     HEADER_VAR_PREFIX = "var_prefix"
@@ -27,7 +24,7 @@ class EnsemblDataService(ParameterConfiguration):
     INCLUDE_BIOTYPES = "include_biotypes"
     INCLUDE_CONSEQUENCES = "include_consequences"
     BIOTYPE_STR = "biotype_str"
-
+    SKIP_INCLUDING_ALL_CDSS = "skip_including_all_CDSs"
     CONFIG_KEY_DATA = "enmsembl_translation"
     CONFIG_TRANSLATION_TABLE = "translation_table"
 
@@ -44,15 +41,9 @@ class EnsemblDataService(ParameterConfiguration):
         if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
             self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
 
-        # Todo: Review if the translation table use in the 3frame method is the same that mito or nuclear?
         self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TRANSLATION_TABLE]
         if self.CONFIG_TRANSLATION_TABLE in self.get_pipeline_parameters():
             self._translation_table = self.get_pipeline_parameters()[self.CONFIG_TRANSLATION_TABLE]
-
-        self._nuclear_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.NUCLEAR_TRANSLATION_TABLE]
-        if self.NUCLEAR_TRANSLATION_TABLE in self.get_pipeline_parameters():
-            self._nuclear_translation_table = self.get_pipeline_parameters()[self.NUCLEAR_TRANSLATION_TABLE]
 
         self._mito_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.MITO_TRANSLATION_TABLE]
@@ -123,8 +114,9 @@ class EnsemblDataService(ParameterConfiguration):
             self.BIOTYPE_STR]
         if self.BIOTYPE_STR in self.get_pipeline_parameters():
             self._biotype_str = self.get_pipeline_parameters()[self.BIOTYPE_STR]
-
+        
         # Check if some of the variables are pass by commandline
+        #may be _proteindb_output ?
 
     def three_frame_translation(self, input_file):
         """
@@ -174,18 +166,6 @@ class EnsemblDataService(ParameterConfiguration):
         return False
 
     @staticmethod
-    def generate_fasta_from_gtf(gtf_file, genome_fasta, fasta_output):
-        """use gffread to convert transcript coordinates to genome fasta sequences"""
-        if os.path.isfile(fasta_output):
-            return fasta_output
-
-        # Todo: @Husen, we should remove calls to external tools.
-        cmd = "gffread -F -w {fasta_out} -g {genome_fasta} {gtf_file}".format(
-            fasta_out=fasta_output, genome_fasta=genome_fasta, gtf_file=gtf_file)
-        os.system(cmd)
-        return fasta_output
-
-    @staticmethod
     def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, cds_info=[]):
         """
         the given sequence in the fasta file represents all exons of the transcript combined.
@@ -213,8 +193,6 @@ class EnsemblDataService(ParameterConfiguration):
         ref_seq = ref_seq[
                   start_coding_index:stop_coding_index]  # just keep the coding regions (mostly effective in case of protein-coding genes)
         nc_index = 0
-        # Todo: The feature_len variable is not use in the method.
-        feature_len = 0
         if len(ref_allele) == len(var_allele) or ref_allele[0] == var_allele[0]:
             for feature in features_info:  # for every exon, cds or stop codon
                 if var_pos in range(feature[0], feature[
@@ -229,10 +207,8 @@ class EnsemblDataService(ParameterConfiguration):
                     else:
                         return ref_seq, alt_seq
 
-                feature_len = (feature[1] - feature[0] + 1)
-                nc_index += feature_len
-                # feature_seq = coding_ref_seq[nc_index:nc_index+feature_len]
-
+                nc_index += (feature[1] - feature[0] + 1)
+                
         return ref_seq, alt_seq
 
     @staticmethod
@@ -274,7 +250,7 @@ class EnsemblDataService(ParameterConfiguration):
         return feature.chrom, feature.strand, coding_features, feature.attributes[biotype_str][0]
 
     @staticmethod
-    def get_orfs(ref_seq, alt_seq, trans_table, num_orfs=1):
+    def get_orfs(ref_seq, alt_seq, translation_table, num_orfs=1):
         """
         Translate the coding_ref and the coding_alt into ORFs
         :param ref_seq:
@@ -287,12 +263,12 @@ class EnsemblDataService(ParameterConfiguration):
         ref_orfs = []
         alt_orfs = []
         for n in range(0, num_orfs):
-            ref_orfs.append(ref_seq[n::].translate(trans_table))
-            alt_orfs.append(alt_seq[n::].translate(trans_table))
+            ref_orfs.append(ref_seq[n::].translate(translation_table))
+            alt_orfs.append(alt_seq[n::].translate(translation_table))
 
         return ref_orfs, alt_orfs
 
-    def vcf_to_proteindb(self, vcf_file, genome_fasta, gtf_fasta):
+    def vcf_to_proteindb(self, vcf_file, transcripts_fasta, gtf_db_file):
         """
         Generate peps for variants by modifying sequences of affected transcripts (VEP annotated).
         It only considers variants within potential coding regions of the transcript
@@ -302,10 +278,10 @@ class EnsemblDataService(ParameterConfiguration):
         :param gtf_fasta:
         :return:
         """
-        transcripts_dict = SeqIO.index(genome_fasta, "fasta")
+        transcripts_dict = SeqIO.index(transcripts_fasta, "fasta")
         # handle cases where the transript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
-
+        
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             for record in vcf_reader:
@@ -317,12 +293,12 @@ class EnsemblDataService(ParameterConfiguration):
                     af = float(record.INFO[self._af_field][0])
                 except KeyError:
                     continue
-
+                
                 # check if the AF passed the threshold
                 if af < self._af_threshold:
                     continue
 
-                trans_table = self._nuclear_translation_table
+                trans_table = self._translation_table
                 consequences = []
                 if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
                     trans_table = self._mito_translation_table
@@ -334,14 +310,16 @@ class EnsemblDataService(ParameterConfiguration):
                     try:
                         consequence = transcript_info[self._consequence_index]
                     except IndexError:
-                        print("Give a valid index for the consequence in the INFO field for: ", transcript_record)
+                        print("Give a valid index for the consequence in the INFO field for: ", 
+                              transcript_record)
                         continue
                     consequences.append(consequence)
 
                     try:
                         transcript_id = transcript_info[self._transcript_index]
                     except IndexError:
-                        print("Give a valid index for the Transcript ID in the INFO field for: ", transcript_record)
+                        print("Give a valid index for the Transcript ID in the INFO field for: ", 
+                              transcript_record)
                         continue
                     if transcript_id == "":
                         continue
@@ -356,7 +334,8 @@ class EnsemblDataService(ParameterConfiguration):
                         ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
                         desc = str(row.description)
                     except KeyError:
-                        print("Transcript {} not found in fasta of the GTF file {}".format(transcript_id_v, record))
+                        print("Transcript {} not found in fasta of the GTF file {}".format(
+                            transcript_id_v, record))
                         continue
 
                     feature_types = ['exon']
@@ -372,24 +351,27 @@ class EnsemblDataService(ParameterConfiguration):
                             print("Could not extra cds position from fasta header for: ", desc)
                             pass
 
-                    chrom, strand, features_info, feature_biotype = get_features(gtf_fasta, transcript_id_v, self._biotype_str, feature_types)
+                    chrom, strand, features_info, feature_biotype = get_features(gtf_db_file, 
+                                                                                 transcript_id_v, 
+                                                                                 self._biotype_str, 
+                                                                                 feature_types)
 
                     # skip transcripts with unwanted consequences
                     if (consequence in self._exclude_consequences or
-                            (consequence not in self._include_consequences and self._include_consequences != ['all'])
-                    ):
+                            (consequence not in self._include_consequences and 
+                             self._include_consequences != ['all'])):
                         continue
 
                     # only include features that have the specified biotypes or they have CDSs info
                     if 'CDS' in feature_types and not self._skip_including_all_cds:
                         pass
                     elif (feature_biotype in self._exclude_biotypes or
-                          (feature_biotype not in self._include_biotypes and self._include_biotypes != ['all'])):
+                          (feature_biotype not in self._include_biotypes and 
+                           self._include_biotypes != ['all'])):
                         continue
 
                     for alt in record.ALT:  # in cases of multiple alternative alleles consider all
-                        if transcript_id + str(
-                                alt) not in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
+                        if transcript_id + str(alt) not in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
                             processed_transcript_allele.append(transcript_id + str(alt))
                             "for non-CDSs, only consider the exon that actually overlaps the variant"
                             if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
@@ -420,12 +402,15 @@ class EnsemblDataService(ParameterConfiguration):
 
     def write_output(self, seq_id, desc, seqs, prots_fn):
         "write the orfs to the output file"
-        for i, alt_orf in enumerate(seqs):
-            orf_num = ""
-            if i > 0:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-                orf_num = "_" + str(i + 1)
+        write_i = False
+        if len(seqs)>1: #only add _num when multiple ORFs are generated (e.g in 3 ORF)
+            write_i = True
 
-            prots_fn.write('>{} {}\n{}\n'.format(seq_id + orf_num, desc, alt_orf))
+        for i, orf in enumerate(seqs):
+            if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
+                prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
+            else:
+                prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
 
 
 if __name__ == '__main__':
