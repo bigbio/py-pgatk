@@ -1,7 +1,6 @@
 """
 Translate VEP annotated variants from VCF file
 """
-#Fix translate_table to be based on the given value
 
 import sys
 from Bio import SeqIO
