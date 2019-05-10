@@ -1,6 +1,7 @@
 """
 Translate VEP annotated variants from VCF file
 """
+#Fix translate_table to be based on the given value
 
 import sys
 from Bio import SeqIO
@@ -13,7 +14,6 @@ def parse_commandline_args():
     parser = argparse.ArgumentParser(description='Generate peptides based on DNA variants (VCF)')
     
     #reference annotations and genome files
-    parser.add_argument('--genome_fasta', help='path to the genome sequence', required=True)
     parser.add_argument('--gtf_transcripts_fasta', help='path to the transcripts fasta (gtf converted fasta format)', required=True)
     parser.add_argument('--gene_annotations_gtf', help='path to the gene annotations file', required=True)
     
