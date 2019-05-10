@@ -9,6 +9,7 @@ from toolbox.general import ParameterConfiguration
 
 class EnsemblDataService(ParameterConfiguration):
     CONFIG_KEY_VCF = "ensembl_vcf_proteindb"
+    TRANSCRIPTS_FASTA = "transcripts_fasta"
     MITO_TRANSLATION_TABLE = "mito_translation_table"
     HEADER_VAR_PREFIX = "var_prefix"
     REPORT_REFERENCE_SEQ = "report_ref_seq"
@@ -116,7 +117,7 @@ class EnsemblDataService(ParameterConfiguration):
             self._biotype_str = self.get_pipeline_parameters()[self.BIOTYPE_STR]
         
         # Check if some of the variables are pass by commandline
-        #may be _proteindb_output ?
+        # proteindb_output, ensembl_vcf_proteindb, transcripts_fasta
 
     def three_frame_translation(self, input_file):
         """

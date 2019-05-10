@@ -2,10 +2,10 @@ enmsembl_translation:
   translation_table: 1
   proteindb_output_file: 'peptide-database.fa'
   ensembl_vcf_proteindb:
-    nuclear_translation_table: 1
+  transcripts_fasta:
     mito_translation_table: 2
     var_prefix: "var"
-    report_ref_seq: True
+    report_ref_seq: False
     annotation_field_name: 'CSQ'
     af_field: 'MAF'
     af_threshold: 0.01
@@ -13,7 +13,7 @@ enmsembl_translation:
     consequence_index: 1
     exclude_biotypes: []
     exclude_consequences: ['downstream_gene_variant', 'upstream_gene_variant', 'intergenic_variant', 'intron_variant', 'synonymous_variant']
-    skip_including_all_cds: True
+    skip_including_all_cds: False
     include_biotypes: []
     include_consequences: 'all'
     biotype_str: 'transcript_biotype'
