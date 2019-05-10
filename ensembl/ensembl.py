@@ -21,10 +21,10 @@ class EnsemblDataService(ParameterConfiguration):
     AF_THRESHOLD = "af_threshold"
     TRANSCRIPT_INDEX = "transcript_index"
     CONSEQUENCE_INDEX = "consequence_index"
-    EXCLUDE_BIOTYPES = "excluded_biotypes"
-    EXCLUDE_CONSEQUENCES = "excluded_consequences"
+    EXCLUDE_BIOTYPES = "exclude_biotypes"
+    EXCLUDE_CONSEQUENCES = "exclude_consequences"
     SKIP_INCLUDING_ALL_CDS = "skip_including_all_cds"
-    INCLUDE_BIOTYPES = "included_biotypes"
+    INCLUDE_BIOTYPES = "include_biotypes"
     INCLUDE_CONSEQUENCES = "include_consequences"
     BIOTYPE_STR = "biotype_str"
 
@@ -213,6 +213,7 @@ class EnsemblDataService(ParameterConfiguration):
         ref_seq = ref_seq[
                   start_coding_index:stop_coding_index]  # just keep the coding regions (mostly effective in case of protein-coding genes)
         nc_index = 0
+        # Todo: The feature_len variable is not use in the method.
         feature_len = 0
         if len(ref_allele) == len(var_allele) or ref_allele[0] == var_allele[0]:
             for feature in features_info:  # for every exon, cds or stop codon
