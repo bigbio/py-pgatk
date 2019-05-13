@@ -84,30 +84,26 @@ class EnsemblDataService(ParameterConfiguration):
         if self.CONSEQUENCE_INDEX in self.get_pipeline_parameters():
             self._consequence_index = self.get_pipeline_parameters()[self.CONSEQUENCE_INDEX]
 
-        self._exclude_biotypes = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.EXCLUDE_BIOTYPES]
+        self._exclude_biotypes = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_BIOTYPES])
         if self.EXCLUDE_BIOTYPES in self.get_pipeline_parameters():
-            self._exclude_biotypes = self.get_pipeline_parameters()[self.EXCLUDE_BIOTYPES]
+            self._exclude_biotypes = self.get_multiple_options(self.get_pipeline_parameters()[self.EXCLUDE_BIOTYPES])
 
-        self._exclude_consequences = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.EXCLUDE_CONSEQUENCES]
+        self._exclude_consequences = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_CONSEQUENCES])
         if self.EXCLUDE_CONSEQUENCES in self.get_pipeline_parameters():
-            self._exclude_consequences = self.get_pipeline_parameters()[self.EXCLUDE_CONSEQUENCES]
+            self._exclude_consequences = self.get_multiple_options(self.get_pipeline_parameters()[self.EXCLUDE_CONSEQUENCES])
 
         self._skip_including_all_cds = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.SKIP_INCLUDING_ALL_CDS]
         if self.ANNOTATION_FIELD_NAME in self.get_pipeline_parameters():
             self._annotation_field_name = self.get_pipeline_parameters()[self.ANNOTATION_FIELD_NAME]
 
-        self._include_biotypes = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.INCLUDE_BIOTYPES]
+        self._include_biotypes = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_BIOTYPES])
         if self.INCLUDE_BIOTYPES in self.get_pipeline_parameters():
-            self._include_biotypes = self.get_pipeline_parameters()[self.INCLUDE_BIOTYPES]
+            self._include_biotypes = self.get_multiple_options(self.get_pipeline_parameters()[self.INCLUDE_BIOTYPES])
 
-        self._include_consequences = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.INCLUDE_CONSEQUENCES]
+        self._include_consequences = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_CONSEQUENCES])
         if self.INCLUDE_CONSEQUENCES in self.get_pipeline_parameters():
-            self._include_consequences = self.get_pipeline_parameters()[self.INCLUDE_CONSEQUENCES]
+            self._include_consequences = self.get_multiple_options(self.get_pipeline_parameters()[self.INCLUDE_CONSEQUENCES])
 
         self._biotype_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.BIOTYPE_STR]
@@ -140,6 +136,15 @@ class EnsemblDataService(ParameterConfiguration):
             output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF1', RF1))
             output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF2', RF2))
             output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF3', RF3))
+
+    @staticmethod
+    def get_multiple_options(options_str: str):
+        """
+        This method takes an String like option1, option2, ... and produce and array [option1, option2,... ]
+        :param options_str:
+        :return: Array
+        """
+        return list(map(lambda x : x.strip(), options_str.split(",")))
 
     @staticmethod
     def check_overlap(var_start, var_end, features_info=[[0, 1, 'type']]):
@@ -308,7 +313,6 @@ class EnsemblDataService(ParameterConfiguration):
                 processed_transcript_allele = []
                 for transcript_record in record.INFO[self._annotation_field_name]:
                     transcript_info = transcript_record.split('|')
-
                     try:
                         consequence = transcript_info[self._consequence_index]
                     except IndexError:
@@ -353,8 +357,7 @@ class EnsemblDataService(ParameterConfiguration):
                             print("Could not extra cds position from fasta header for: ", desc)
                             pass
 
-                    chrom, strand, features_info, feature_biotype = self.get_features(db,
-                                                                                      transcript_id_v,
+                    chrom, strand, features_info, feature_biotype = self.get_features(db,transcript_id_v,
                                                                                       self._biotype_str,
                                                                                       feature_types)
 
@@ -378,10 +381,7 @@ class EnsemblDataService(ParameterConfiguration):
                             "for non-CDSs, only consider the exon that actually overlaps the variant"
                             if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
                                     self.check_overlap(record.POS, record.POS + len(alt), features_info)):
-                                coding_ref_seq, coding_alt_seq = get_altseq(ref_seq, Seq(str(record.REF)),
-                                                                            Seq(str(alt)),
-                                                                            int(record.POS), strand, features_info,
-                                                                            cds_info)
+                                coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)), Seq(str(alt)),int(record.POS), strand, features_info, cds_info)
                                 if coding_alt_seq != "":
                                     ref_orfs, alt_orfs = self.get_orfs(coding_ref_seq, coding_alt_seq, trans_table, num_orfs)
 
