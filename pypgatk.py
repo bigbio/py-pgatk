@@ -226,7 +226,7 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
     if input is None:
         print_help()
 
-    pipeline_arguments = {EnsemblDataService.CONFIG_TRANSLATION_TABLE: translation_table,
+    pipeline_arguments = {EnsemblDataService.TRANSLATION_TABLE: translation_table,
                           EnsemblDataService.PROTEIN_DB_OUTPUT: output}
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
@@ -273,7 +273,7 @@ def vep_to_proteindb(ctx, config_file, transcript_fasta, vep_annotated_vcf, gene
 
     pipeline_arguments = {}
     pipeline_arguments[EnsemblDataService.MITO_TRANSLATION_TABLE] = mito_translation_table
-    pipeline_arguments[EnsemblDataService.CONFIG_TRANSLATION_TABLE] = translation_table
+    pipeline_arguments[EnsemblDataService.TRANSLATION_TABLE] = translation_table
     pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
     pipeline_arguments[EnsemblDataService.REPORT_REFERENCE_SEQ] = report_ref_seq
     pipeline_arguments[EnsemblDataService.PROTEIN_DB_OUTPUT] = output_proteindb
