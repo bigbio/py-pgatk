@@ -3,7 +3,6 @@ import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
 
-from db.VCFtoProteinDB import get_features, check_overlap, get_altseq, get_orfs
 from toolbox.general import ParameterConfiguration
 
 
@@ -352,10 +351,10 @@ class EnsemblDataService(ParameterConfiguration):
                             print("Could not extra cds position from fasta header for: ", desc)
                             pass
 
-                    chrom, strand, features_info, feature_biotype = get_features(gtf_db_file, 
-                                                                                 transcript_id_v, 
-                                                                                 self._biotype_str, 
-                                                                                 feature_types)
+                    chrom, strand, features_info, feature_biotype = self.get_features(gtf_db_file,
+                                                                                      transcript_id_v,
+                                                                                      self._biotype_str,
+                                                                                      feature_types)
 
                     # skip transcripts with unwanted consequences
                     if (consequence in self._exclude_consequences or
@@ -376,13 +375,13 @@ class EnsemblDataService(ParameterConfiguration):
                             processed_transcript_allele.append(transcript_id + str(alt))
                             "for non-CDSs, only consider the exon that actually overlaps the variant"
                             if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
-                                    check_overlap(record.POS, record.POS + len(alt), features_info)):
+                                    self.check_overlap(record.POS, record.POS + len(alt), features_info)):
                                 coding_ref_seq, coding_alt_seq = get_altseq(ref_seq, Seq(str(record.REF)),
                                                                             Seq(str(alt)),
                                                                             int(record.POS), strand, features_info,
                                                                             cds_info)
                                 if coding_alt_seq != "":
-                                    ref_orfs, alt_orfs = get_orfs(coding_ref_seq, coding_alt_seq, trans_table, num_orfs)
+                                    ref_orfs, alt_orfs = self.get_orfs(coding_ref_seq, coding_alt_seq, trans_table, num_orfs)
 
                                     record_id = ""
                                     if record.ID:

@@ -101,18 +101,10 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
 
 
 @cli.command('cbioportal-downloader', short_help=' Command to download the the cbioportal studies')
-@click.option('--config_file',
-              '-c',
-              help='Configuration file for the ensembl data downloader pipeline',
-              default='config/cbioportal_config.yaml')
-@click.option('--output_directory',
-              '-o',
-              help='Output directory for the peptide databases',
-              default="./database_cbioportal/")
-@click.option('--list_studies', '-l',
-              help='Print the list of all the studies in cBioPortal (https://www.cbioportal.org)', is_flag=True)
-@click.option('--download_study', '-d',
-              help="Download an specific Study from cBioPortal -- (all to download all studies)")
+@click.option('--config_file', '-c', help='Configuration file for the ensembl data downloader pipeline', default='config/cbioportal_config.yaml')
+@click.option('--output_directory', '-o', help='Output directory for the peptide databases', default="./database_cbioportal/")
+@click.option('--list_studies', '-l', help='Print the list of all the studies in cBioPortal (https://www.cbioportal.org)', is_flag=True)
+@click.option('--download_study', '-d', help="Download an specific Study from cBioPortal -- (all to download all studies)")
 @click.pass_context
 def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study):
     if config_file is None:
@@ -226,7 +218,7 @@ def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_
 @click.option('-t', '--translation_table', help='Translation table default value 1', default='1')
 @click.option('-out', '--output', help='Output File', default="peptide-database.fa")
 @click.pass_context
-def threeframe_trasnlation(ctx, config_file, input, translation_table, output):
+def threeframe_translation(ctx, config_file, input, translation_table, output):
     if input is None:
         print_help()
 
@@ -237,50 +229,34 @@ def threeframe_trasnlation(ctx, config_file, input, translation_table, output):
     ensembl_data_service.three_frame_translation(input)
 
 
-@cli.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants (VCF)")
-@click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
-              default='config/ensembl_config.yaml')
-@click.option('-gf', '--genome_fasta', help='Path to the genome sequence')
-@click.option('-va', '--vep_annotated_vcf', help='Path to the vep annotated VCF file')
-@click.option('-gtf', '--gene_annotated_gtf', help='Path to the gene annotations file')
-@click.option('-nt', '--nuclear_translation_table', default=1, type=int, help='Nuclear_trans_table (default 1)')
-@click.option('-mt', '--mito_translation_table', default=2, type=int, help='Mito_trans_table (default 2)')
-@click.option('-vp', '--var_prefix', default="var", help="String to add before the variant peptides")
-@click.option('-rr', '--report_ref_seq', action='store_const', const=True,
-              help='In addition to var peps, also report all ref peps')
-@click.option('-out', '--output_proteindb', default="peptide-database.fa",
-              help="Output file name, exits if already exists")
-@click.option('-afn', '--annotation_field_name', default="CSQ",
-              help="Annotation field name found in the INFO column, e.g CSQ or vep")
-@click.option('-aff', '--af_field', default="MAF", help="field name in the VCF INFO column to use for filtering on AF")
-@click.option('-aft', '--af_threshold', default=0.01, type=float,
-              help='minium AF threshold for considering common variants')
-@click.option('-ti', '--transcript_index', default=3, type=int,
-              help='index of transcript ID in the annotated columns (separated by |)')
-@click.option('-ci', '--consequence_index', default=1, type=int,
-              help='index of consequence in the annotated columns (separated by |)')
-@click.option('-eb', '--exclude_biotypes', nargs='*', default=[], help="excluded_biotypes")
-@click.option('-ec', '--exclude_consequences', nargs='*', default=['downstream_gene_variant',
-                                                                   'upstream_gene_variant', 'intergenic_variant',
-                                                                   'intron_variant', 'synonymous_variant'],
-              help="excluded_consequences")
-@click.option('-scds', '--skip_including_all_cds', action='store_const', const=True,
-              help="by default any transcript that has a defined CDS will be used, this option disables this features instead it only depends on the biotypes")
-@click.option('-ib', '--include_biotypes', nargs='*', default=[], help="include_biotypes")
-@click.option('-ic', '--include_consequences', nargs='+', default=['all'], help="included_consequences, default all")
-@click.option('-bs', '--biotype_str', default='transcript_biotype', type=str,
-              help='string used to identify gene/transcript biotype in the gtf file.')
+@cli.command('vep-to-proteindb', short_help="Generate peptides based on DNA variants from ENSEMBL VEP VCF files")
+@click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files', default='config/ensembl_config.yaml')
+@click.option('--transcript_fasta', help='Path to the transcript sequence')
+@click.option('--vep_annotated_vcf', help='Path to the vep annotated VCF file')
+@click.option('--gene_annotated_gtf', help='Path to the gene annotations file')
+@click.option('--mito_translation_table', default=2, type=int, help='Mito_trans_table (default 2)')
+@click.option('--var_prefix', default="var", help="String to add before the variant peptides")
+@click.option('--report_ref_seq', help='In addition to var peps, also report all ref peps', is_flag=True)
+@click.option('--output_proteindb', default="peptide-database.fa", help="Output file name, exits if already exists")
+@click.option('--annotation_field_name', default="CSQ", help="Annotation field name found in the INFO column, e.g CSQ or vep")
+@click.option('--af_field', default="MAF", help="field name in the VCF INFO column to use for filtering on AF")
+@click.option('--af_threshold', default=0.01,help='Minium AF threshold for considering common variants')
+@click.option('--transcript_index', default=3, type=int, help='Index of transcript ID in the annotated columns (separated by |)')
+@click.option('--consequence_index', default=1, type=int, help='Index of consequence in the annotated columns (separated by |)')
+@click.option('--exclude_biotypes', default='', help="Excluded Biotypes")
+@click.option('--exclude_consequences', default='downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant', help="Excluded Consequences", show_default=True)
+@click.option('--skip_including_all_cds', help="by default any transcript that has a defined CDS will be used, this option disables this features instead it only depends on the biotypes", is_flag=True)
+@click.option('--include_biotypes', default='', help="Include Biotypes")
+@click.option('--include_consequences', default='all', help="included_consequences, default all")
+@click.option('--biotype_str', default='transcript_biotype', help='string used to identify gene/transcript biotype in the gtf file.')
 @click.pass_context
-def vcf_to_proteindb(ctx, config_file, genome_fasta, vep_annotated_vcf, gene_annotated_gtf, nuclear_translation_table,
-                     mito_translation_table, var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
-                     af_field,
-                     af_threshold, transcript_index, consequence_index, exclude_biotypes, exclude_consequences,
-                     skip_including_all_cds, include_biotypes, include_consequences, biotype_str):
-    if genome_fasta is None or vep_annotated_vcf is None or gene_annotated_gtf is None:
+def vep_to_proteindb(ctx, config_file, transcript_fasta, vep_annotated_vcf, gene_annotated_gtf, mito_translation_table, var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
+                     af_field, af_threshold, transcript_index, consequence_index, exclude_biotypes, exclude_consequences, skip_including_all_cds, include_biotypes, include_consequences, biotype_str):
+
+    if transcript_fasta is None or vep_annotated_vcf is None or gene_annotated_gtf is None:
         print_help()
 
     pipeline_arguments = {}
-    pipeline_arguments[EnsemblDataService.NUCLEAR_TRANSLATION_TABLE] = nuclear_translation_table
     pipeline_arguments[EnsemblDataService.MITO_TRANSLATION_TABLE] = mito_translation_table
     pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
     pipeline_arguments[EnsemblDataService.REPORT_REFERENCE_SEQ] = report_ref_seq
@@ -298,7 +274,7 @@ def vcf_to_proteindb(ctx, config_file, genome_fasta, vep_annotated_vcf, gene_ann
     pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.vcf_to_proteindb(vep_annotated_vcf, genome_fasta, gene_annotated_gtf)
+    ensembl_data_service.vcf_to_proteindb(vep_annotated_vcf, transcript_fasta, gene_annotated_gtf)
 
 
 if __name__ == "__main__":

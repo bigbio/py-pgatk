@@ -11,10 +11,10 @@ enmsembl_translation:
     af_threshold: 0.01
     transcript_index: 3
     consequence_index: 1
-    exclude_biotypes: []
-    exclude_consequences: ['downstream_gene_variant', 'upstream_gene_variant', 'intergenic_variant', 'intron_variant', 'synonymous_variant']
+    exclude_biotypes: ''
+    exclude_consequences: 'downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant'
     skip_including_all_cds: False
-    include_biotypes: []
+    include_biotypes: ''
     include_consequences: 'all'
     biotype_str: 'transcript_biotype'
   logger:
