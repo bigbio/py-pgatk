@@ -45,7 +45,8 @@ class EnsemblDataService(ParameterConfiguration):
         if self.CONFIG_TRANSLATION_TABLE in self.get_pipeline_parameters():
             self._translation_table = self.get_pipeline_parameters()[self.CONFIG_TRANSLATION_TABLE]
 
-        self._mito_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.MITO_TRANSLATION_TABLE]
+        self._mito_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
+            self.MITO_TRANSLATION_TABLE]
         if self.MITO_TRANSLATION_TABLE in self.get_pipeline_parameters():
             self._mito_translation_table = self.get_pipeline_parameters()[self.MITO_TRANSLATION_TABLE]
 
@@ -84,32 +85,38 @@ class EnsemblDataService(ParameterConfiguration):
         if self.CONSEQUENCE_INDEX in self.get_pipeline_parameters():
             self._consequence_index = self.get_pipeline_parameters()[self.CONSEQUENCE_INDEX]
 
-        self._exclude_biotypes = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_BIOTYPES])
+        self._exclude_biotypes = self.get_multiple_options(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_BIOTYPES])
         if self.EXCLUDE_BIOTYPES in self.get_pipeline_parameters():
             self._exclude_biotypes = self.get_multiple_options(self.get_pipeline_parameters()[self.EXCLUDE_BIOTYPES])
 
-        self._exclude_consequences = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_CONSEQUENCES])
+        self._exclude_consequences = self.get_multiple_options(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_CONSEQUENCES])
         if self.EXCLUDE_CONSEQUENCES in self.get_pipeline_parameters():
-            self._exclude_consequences = self.get_multiple_options(self.get_pipeline_parameters()[self.EXCLUDE_CONSEQUENCES])
+            self._exclude_consequences = self.get_multiple_options(
+                self.get_pipeline_parameters()[self.EXCLUDE_CONSEQUENCES])
 
         self._skip_including_all_cds = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.SKIP_INCLUDING_ALL_CDS]
         if self.ANNOTATION_FIELD_NAME in self.get_pipeline_parameters():
             self._annotation_field_name = self.get_pipeline_parameters()[self.ANNOTATION_FIELD_NAME]
 
-        self._include_biotypes = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_BIOTYPES])
+        self._include_biotypes = self.get_multiple_options(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_BIOTYPES])
         if self.INCLUDE_BIOTYPES in self.get_pipeline_parameters():
             self._include_biotypes = self.get_multiple_options(self.get_pipeline_parameters()[self.INCLUDE_BIOTYPES])
 
-        self._include_consequences = self.get_multiple_options(self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_CONSEQUENCES])
+        self._include_consequences = self.get_multiple_options(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_CONSEQUENCES])
         if self.INCLUDE_CONSEQUENCES in self.get_pipeline_parameters():
-            self._include_consequences = self.get_multiple_options(self.get_pipeline_parameters()[self.INCLUDE_CONSEQUENCES])
+            self._include_consequences = self.get_multiple_options(
+                self.get_pipeline_parameters()[self.INCLUDE_CONSEQUENCES])
 
         self._biotype_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.BIOTYPE_STR]
         if self.BIOTYPE_STR in self.get_pipeline_parameters():
             self._biotype_str = self.get_pipeline_parameters()[self.BIOTYPE_STR]
-        
+
         # Check if some of the variables are pass by commandline
         # proteindb_output, ensembl_vcf_proteindb, transcripts_fasta
 
@@ -144,7 +151,7 @@ class EnsemblDataService(ParameterConfiguration):
         :param options_str:
         :return: Array
         """
-        return list(map(lambda x : x.strip(), options_str.split(",")))
+        return list(map(lambda x: x.strip(), options_str.split(",")))
 
     @staticmethod
     def check_overlap(var_start, var_end, features_info=[[0, 1, 'type']]):
@@ -212,7 +219,7 @@ class EnsemblDataService(ParameterConfiguration):
                         return ref_seq, alt_seq
 
                 nc_index += (feature[1] - feature[0] + 1)
-                
+
         return ref_seq, alt_seq
 
     @staticmethod
@@ -288,7 +295,7 @@ class EnsemblDataService(ParameterConfiguration):
         transcripts_dict = SeqIO.index(transcripts_fasta, "fasta")
         # handle cases where the transript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
-        
+
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             for record in vcf_reader:
@@ -300,7 +307,7 @@ class EnsemblDataService(ParameterConfiguration):
                     af = float(record.INFO[self._af_field][0])
                 except KeyError:
                     continue
-                
+
                 # check if the AF passed the threshold
                 if af < self._af_threshold:
                     continue
@@ -316,7 +323,7 @@ class EnsemblDataService(ParameterConfiguration):
                     try:
                         consequence = transcript_info[self._consequence_index]
                     except IndexError:
-                        print("Give a valid index for the consequence in the INFO field for: ", 
+                        print("Give a valid index for the consequence in the INFO field for: ",
                               transcript_record)
                         continue
                     consequences.append(consequence)
@@ -324,7 +331,7 @@ class EnsemblDataService(ParameterConfiguration):
                     try:
                         transcript_id = transcript_info[self._transcript_index]
                     except IndexError:
-                        print("Give a valid index for the Transcript ID in the INFO field for: ", 
+                        print("Give a valid index for the Transcript ID in the INFO field for: ",
                               transcript_record)
                         continue
                     if transcript_id == "":
@@ -357,13 +364,13 @@ class EnsemblDataService(ParameterConfiguration):
                             print("Could not extra cds position from fasta header for: ", desc)
                             pass
 
-                    chrom, strand, features_info, feature_biotype = self.get_features(db,transcript_id_v,
+                    chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                                       self._biotype_str,
                                                                                       feature_types)
 
                     # skip transcripts with unwanted consequences
                     if (consequence in self._exclude_consequences or
-                            (consequence not in self._include_consequences and 
+                            (consequence not in self._include_consequences and
                              self._include_consequences != ['all'])):
                         continue
 
@@ -371,41 +378,47 @@ class EnsemblDataService(ParameterConfiguration):
                     if 'CDS' in feature_types and not self._skip_including_all_cds:
                         pass
                     elif (feature_biotype in self._exclude_biotypes or
-                          (feature_biotype not in self._include_biotypes and 
+                          (feature_biotype not in self._include_biotypes and
                            self._include_biotypes != ['all'])):
                         continue
 
                     for alt in record.ALT:  # in cases of multiple alternative alleles consider all
-                        if transcript_id + str(alt) not in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
+                        if transcript_id + str(
+                                alt) not in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
                             processed_transcript_allele.append(transcript_id + str(alt))
                             "for non-CDSs, only consider the exon that actually overlaps the variant"
                             if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
                                     self.check_overlap(record.POS, record.POS + len(alt), features_info)):
-                                coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)), Seq(str(alt)),int(record.POS), strand, features_info, cds_info)
+                                coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
+                                                                                 Seq(str(alt)), int(record.POS), strand,
+                                                                                 features_info, cds_info)
                                 if coding_alt_seq != "":
-                                    ref_orfs, alt_orfs = self.get_orfs(coding_ref_seq, coding_alt_seq, trans_table, num_orfs)
+                                    ref_orfs, alt_orfs = self.get_orfs(coding_ref_seq, coding_alt_seq, trans_table,
+                                                                       num_orfs)
 
                                     record_id = ""
                                     if record.ID:
                                         record_id = '_' + str(record.ID)
-                                    self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id), '.'.join([str(record.CHROM), str(record.POS), str(record.REF), str(alt)]),
-                                                                  transcript_id_v]),
-                                                 desc=feature_biotype + ":" + consequence,
-                                                 seqs=alt_orfs,
-                                                 prots_fn=prots_fn)
+                                    self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
+                                                                       '.'.join([str(record.CHROM), str(record.POS),
+                                                                                 str(record.REF), str(alt)]),
+                                                                       transcript_id_v]),
+                                                      desc=feature_biotype + ":" + consequence,
+                                                      seqs=alt_orfs,
+                                                      prots_fn=prots_fn)
 
                                     if self._report_reference_seq:
                                         self.write_output(seq_id=transcript_id_v,
-                                                     desc=feature_biotype,
-                                                     seqs=ref_orfs,
-                                                     prots_fn=prots_fn)
+                                                          desc=feature_biotype,
+                                                          seqs=ref_orfs,
+                                                          prots_fn=prots_fn)
 
         return self._proteindb_output
 
     def write_output(self, seq_id, desc, seqs, prots_fn):
         "write the orfs to the output file"
         write_i = False
-        if len(seqs)>1: #only add _num when multiple ORFs are generated (e.g in 3 ORF)
+        if len(seqs) > 1:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
             write_i = True
 
         for i, orf in enumerate(seqs):
