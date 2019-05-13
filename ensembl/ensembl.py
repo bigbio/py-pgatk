@@ -27,7 +27,10 @@ class EnsemblDataService(ParameterConfiguration):
     BIOTYPE_STR = "biotype_str"
     SKIP_INCLUDING_ALL_CDSS = "skip_including_all_CDSs"
     CONFIG_KEY_DATA = "enmsembl_translation"
-    
+    NUM_ORFS = "num_orfs"
+    NUM_ORFS_COMPLEMENT = "num_orfs_complement"
+    EXPRESSION_STR = ""
+    EXPRESSION_THRESH = "expression_thresh"
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -42,7 +45,6 @@ class EnsemblDataService(ParameterConfiguration):
         if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
             self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
 
-        
         self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.TRANSLATION_TABLE]
         if self.TRANSLATION_TABLE in self.get_pipeline_parameters():
@@ -120,8 +122,24 @@ class EnsemblDataService(ParameterConfiguration):
         if self.BIOTYPE_STR in self.get_pipeline_parameters():
             self._biotype_str = self.get_pipeline_parameters()[self.BIOTYPE_STR]
 
-        # Check if some of the variables are pass by commandline
-        # proteindb_output, ensembl_vcf_proteindb, transcripts_fasta
+        self._num_orfs = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.NUM_ORFS]
+        if self.NUM_ORFS is self.get_pipeline_parameters():
+            self._num_orfs = self.get_pipeline_parameters()[self.NUM_ORFS]
+
+        self._num_orfs_complement = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
+            self.NUM_ORFS_COMPLEMENT]
+        if self.NUM_ORFS_COMPLEMENT is self.get_pipeline_parameters():
+            self._num_orfs_complement = self.get_pipeline_parameters()[self.NUM_ORFS_COMPLEMENT]
+
+        self._expression_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
+            self.EXPRESSION_STR]
+        if self.EXPRESSION_STR is self.get_pipeline_parameters():
+            self._expression_str = self.get_pipeline_parameters()[self.EXPRESSION_STR]
+
+        self._expression_thresh = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
+            self.EXPRESSION_THRESH]
+        if self.EXPRESSION_THRESH is self.get_pipeline_parameters():
+            self._expression_thresh = self.get_pipeline_parameters()[self.EXPRESSION_THRESH]
 
     def three_frame_translation(self, input_file):
         """
@@ -264,7 +282,7 @@ class EnsemblDataService(ParameterConfiguration):
         return feature.chrom, feature.strand, coding_features, feature.attributes[biotype_str][0]
 
     @staticmethod
-    def get_orfs(ref_seq, alt_seq, translation_table, num_orfs=1):
+    def get_orfs_vep(ref_seq : str , alt_seq : str, translation_table : int , num_orfs=1):
         """
         Translate the coding_ref and the coding_alt into ORFs
         :param ref_seq:
@@ -281,6 +299,92 @@ class EnsemblDataService(ParameterConfiguration):
             alt_orfs.append(alt_seq[n::].translate(translation_table))
 
         return ref_orfs, alt_orfs
+
+    @staticmethod
+    def get_orfs_vcf(ref_seq : str, translation_table : int , num_orfs : int , num_orfs_complement : int):
+        """translate the coding_ref into ORFs"""
+
+        ref_orfs = []
+        for n in range(0, num_orfs):
+            ref_orfs.append(ref_seq[n::].translate(translation_table))
+
+        rev_ref_seq = ref_seq.reverse_complement()
+        for n in range(0, num_orfs_complement):
+            ref_orfs.append(rev_ref_seq[n::].translate(translation_table))
+
+        return ref_orfs
+
+    def vcf_to_proteindb(self, transcripts_fasta):
+        """
+
+        :param transcripts_fasta:
+        :return:
+        """
+
+        transcripts_dict = SeqIO.index(transcripts_fasta, "fasta")
+
+        with open(self._proteindb_output, 'w') as prots_fn:
+            for transcript_id in transcripts_dict.keys():
+
+                ref_seq = transcripts_dict[
+                    transcript_id].seq  # get the seq and desc for the transcript from the fasta of the gtf
+                desc = str(transcripts_dict[transcript_id].description)
+
+                key_values = {}  # extract key=value in the desc into a dict
+                for value in desc.split(' '):
+                    try:
+                        key_values[value.split('=')[0]] = value.split('=')[1]
+                    except IndexError:
+                        continue
+                this_num_orfs = self._num_orfs
+                this_num_orfs_complement = self._num_orfs_complement
+
+                feature_biotype = ""
+                try:
+                    feature_biotype = key_values[self._biotype_str]
+                except KeyError:
+                    print("Biotype info was not found in the header using {} for record {} {}".format(
+                        self._biotype_str, transcript_id, desc))
+
+                # only include features that have the specified biotypes or they have CDSs info
+                if 'CDS' in key_values.keys() and not self._skip_including_all_cds:
+                    pass
+                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
+                                               (feature_biotype not in self._include_biotypes and self._include_biotypes != [
+                                                   'all'])):
+                    continue
+
+                # check wether to filter on expression and if it passes
+                if self._expression_str:
+                    try:
+                        if float(key_values[self._expression_str]) < self._expression_thresh:
+                            continue
+                    except KeyError:
+                        print(
+                            "Expression information not found in the fasta header with expression_str: {} for record {} {}".format(
+                                self._expression_str, transcript_id, desc))
+                        continue
+                    except TypeError:
+                        print("Expression value is not of valid type (float) at record: {} {}".format(transcript_id,
+                                                                                                      key_values[
+                                                                                                          self._expression_str]))
+                        continue
+
+                # check if cds info exists in the fasta header otherwise translate the whole sequences (3 ORFs)
+                if 'CDS' in key_values.keys():
+                    try:
+                        cds_info = [int(x) for x in key_values['CDS'].split('-')]
+                        ref_seq = ref_seq[cds_info[0] - 1:cds_info[1]]
+                        this_num_orfs = 1
+                        this_num_orfs_complement = 0
+                    except (ValueError, IndexError, KeyError):
+                        print("Could not extra cds position from fasta header for: ", transcript_id, desc)
+
+                ref_orfs = self.get_orfs_vcf(ref_seq, self._translation_table, this_num_orfs, this_num_orfs_complement)
+
+                self.write_output(seq_id=transcript_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
+
+        return self._proteindb_output
 
     def vep_to_proteindb(self, vcf_file, transcripts_fasta, gtf_db_file):
         """
@@ -396,7 +500,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                                                  Seq(str(alt)), int(record.POS), strand,
                                                                                  features_info, cds_info)
                                 if coding_alt_seq != "":
-                                    ref_orfs, alt_orfs = self.get_orfs(coding_ref_seq, coding_alt_seq, trans_table,
+                                    ref_orfs, alt_orfs = self.get_orfs_vep(coding_ref_seq, coding_alt_seq, trans_table,
                                                                        num_orfs)
 
                                     record_id = ""
@@ -429,6 +533,7 @@ class EnsemblDataService(ParameterConfiguration):
                 prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
             else:
                 prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
+
 
 
 if __name__ == '__main__':

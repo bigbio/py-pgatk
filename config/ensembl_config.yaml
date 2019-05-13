@@ -16,6 +16,10 @@ enmsembl_translation:
     include_biotypes: ''
     include_consequences: 'all'
     biotype_str: 'transcript_biotype'
+    num_orfs: 3
+    num_orfs_complement: 0
+    expression_str: ""
+    expression_thresh: 5.0
   logger:
     formatters:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
