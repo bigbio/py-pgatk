@@ -239,6 +239,7 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
 @click.option('--transcript_fasta', help='Path to the transcript sequence')
 @click.option('--vep_annotated_vcf', help='Path to the vep annotated VCF file')
 @click.option('--gene_annotated_gtf', help='Path to the gene annotations file')
+@click.option('--translation_table', default=1, type=int, help='translation table (default 1)')
 @click.option('--mito_translation_table', default=2, type=int, help='Mito_trans_table (default 2)')
 @click.option('--var_prefix', default="var", help="String to add before the variant peptides")
 @click.option('--report_ref_seq', help='In addition to var peps, also report all ref peps', is_flag=True)
@@ -263,7 +264,7 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
 @click.option('--biotype_str', default='transcript_biotype',
               help='string used to identify gene/transcript biotype in the gtf file.')
 @click.pass_context
-def vep_to_proteindb(ctx, config_file, transcript_fasta, vep_annotated_vcf, gene_annotated_gtf, mito_translation_table,
+def vep_to_proteindb(ctx, config_file, transcript_fasta, vep_annotated_vcf, gene_annotated_gtf, translation_table, mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
                      af_field, af_threshold, transcript_index, consequence_index, exclude_biotypes,
                      exclude_consequences, skip_including_all_cds, include_biotypes, include_consequences, biotype_str):
@@ -272,6 +273,7 @@ def vep_to_proteindb(ctx, config_file, transcript_fasta, vep_annotated_vcf, gene
 
     pipeline_arguments = {}
     pipeline_arguments[EnsemblDataService.MITO_TRANSLATION_TABLE] = mito_translation_table
+    pipeline_arguments[EnsemblDataService.TRANSLATION_TABLE] = translation_table
     pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
     pipeline_arguments[EnsemblDataService.REPORT_REFERENCE_SEQ] = report_ref_seq
     pipeline_arguments[EnsemblDataService.PROTEIN_DB_OUTPUT] = output_proteindb

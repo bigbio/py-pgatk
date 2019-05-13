@@ -9,6 +9,7 @@ from toolbox.general import ParameterConfiguration
 class EnsemblDataService(ParameterConfiguration):
     CONFIG_KEY_VCF = "ensembl_vcf_proteindb"
     TRANSCRIPTS_FASTA = "transcripts_fasta"
+    TRANSLATION_TABLE = "translation_table"
     MITO_TRANSLATION_TABLE = "mito_translation_table"
     HEADER_VAR_PREFIX = "var_prefix"
     REPORT_REFERENCE_SEQ = "report_ref_seq"
@@ -26,7 +27,7 @@ class EnsemblDataService(ParameterConfiguration):
     BIOTYPE_STR = "biotype_str"
     SKIP_INCLUDING_ALL_CDSS = "skip_including_all_CDSs"
     CONFIG_KEY_DATA = "enmsembl_translation"
-    CONFIG_TRANSLATION_TABLE = "translation_table"
+    
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -41,9 +42,11 @@ class EnsemblDataService(ParameterConfiguration):
         if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
             self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
 
-        self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TRANSLATION_TABLE]
-        if self.CONFIG_TRANSLATION_TABLE in self.get_pipeline_parameters():
-            self._translation_table = self.get_pipeline_parameters()[self.CONFIG_TRANSLATION_TABLE]
+        
+        self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
+            self.TRANSLATION_TABLE]
+        if self.TRANSLATION_TABLE in self.get_pipeline_parameters():
+            self._translation_table = self.get_pipeline_parameters()[self.TRANSLATION_TABLE]
 
         self._mito_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.MITO_TRANSLATION_TABLE]
