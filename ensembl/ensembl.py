@@ -277,6 +277,9 @@ class EnsemblDataService(ParameterConfiguration):
         :param gtf_fasta:
         :return:
         """
+
+        db = self.parse_gtf(gtf_db_file, gtf_db_file.replace('.gtf', '.db'))
+
         transcripts_dict = SeqIO.index(transcripts_fasta, "fasta")
         # handle cases where the transript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
@@ -350,7 +353,7 @@ class EnsemblDataService(ParameterConfiguration):
                             print("Could not extra cds position from fasta header for: ", desc)
                             pass
 
-                    chrom, strand, features_info, feature_biotype = self.get_features(gtf_db_file,
+                    chrom, strand, features_info, feature_biotype = self.get_features(db,
                                                                                       transcript_id_v,
                                                                                       self._biotype_str,
                                                                                       feature_types)
