@@ -2,7 +2,6 @@ enmsembl_translation:
   translation_table: 1
   proteindb_output_file: 'peptide-database.fa'
   ensembl_vcf_proteindb:
-  transcripts_fasta:
     mito_translation_table: 2
     var_prefix: "var"
     report_ref_seq: False

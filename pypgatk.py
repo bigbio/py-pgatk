@@ -274,7 +274,7 @@ def vep_to_proteindb(ctx, config_file, transcript_fasta, vep_annotated_vcf, gene
     pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.vcf_to_proteindb(vep_annotated_vcf, transcript_fasta, gene_annotated_gtf)
+    ensembl_data_service.vep_to_proteindb(vep_annotated_vcf, transcript_fasta, gene_annotated_gtf)
 
 
 if __name__ == "__main__":

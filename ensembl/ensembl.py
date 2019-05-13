@@ -12,7 +12,7 @@ class EnsemblDataService(ParameterConfiguration):
     MITO_TRANSLATION_TABLE = "mito_translation_table"
     HEADER_VAR_PREFIX = "var_prefix"
     REPORT_REFERENCE_SEQ = "report_ref_seq"
-    PROTEIN_DB_OUTPUT = "protendb_output_file"
+    PROTEIN_DB_OUTPUT = "proteindb_output_file"
     ANNOTATION_FIELD_NAME = "annotation_field_name"
     AF_FIELD = "af_field"
     AF_THRESHOLD = "af_threshold"
@@ -45,8 +45,7 @@ class EnsemblDataService(ParameterConfiguration):
         if self.CONFIG_TRANSLATION_TABLE in self.get_pipeline_parameters():
             self._translation_table = self.get_pipeline_parameters()[self.CONFIG_TRANSLATION_TABLE]
 
-        self._mito_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.MITO_TRANSLATION_TABLE]
+        self._mito_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.MITO_TRANSLATION_TABLE]
         if self.MITO_TRANSLATION_TABLE in self.get_pipeline_parameters():
             self._mito_translation_table = self.get_pipeline_parameters()[self.MITO_TRANSLATION_TABLE]
 
@@ -268,7 +267,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         return ref_orfs, alt_orfs
 
-    def vcf_to_proteindb(self, vcf_file, transcripts_fasta, gtf_db_file):
+    def vep_to_proteindb(self, vcf_file, transcripts_fasta, gtf_db_file):
         """
         Generate peps for variants by modifying sequences of affected transcripts (VEP annotated).
         It only considers variants within potential coding regions of the transcript
