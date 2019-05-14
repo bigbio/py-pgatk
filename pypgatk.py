@@ -264,7 +264,7 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
 @click.option('--biotype_str', default='transcript_biotype',
               help='string used to identify gene/transcript biotype in the gtf file.')
 @click.pass_context
-def vep_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gene_annotated_gtf, translation_table,
+def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gene_annotated_gtf, translation_table,
                      mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
                      af_field, af_threshold, transcript_index, consequence_index, exclude_biotypes,
@@ -294,10 +294,10 @@ def vep_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gen
     ensembl_data_service.vep_to_proteindb(vep_annotated_vcf, transcripts_fasta, gene_annotated_gtf)
 
 
-@cli.command("vcf-to-proteindb", short_help="Generate peptides based on DNA variants (VCF)")
+@cli.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
 @click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
               default='config/ensembl_config.yaml')
-@click.option('--transcripts_fasta', help='Path to the gene annotations file')
+@click.option('--dnaseq_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
 @click.option('--num_orfs', default=3, type=int, help='for genes lacking CDS info, specify number of ORFs (default 0)')
 @click.option('--num_orfs_complement', default=0, type=int,
@@ -315,11 +315,11 @@ def vep_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gen
 @click.option('--expression_thresh', default=5.0, type=float,
               help='Threshold used to filter transcripts based on their expression values')
 @click.pass_context
-def vcf_to_proteindb(ctx, config_file, transcripts_fasta, translation_table, num_orfs, num_orfs_complement,
+def dnaseq_to_proteindb(ctx, config_file, dnaseq_fasta, translation_table, num_orfs, num_orfs_complement,
                      output_proteindb,
                      skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, expression_str,
                      expression_thresh):
-    if transcripts_fasta is None:
+    if dnaseq_fasta is None:
         print_help()
 
     pipeline_arguments = {}
@@ -335,7 +335,7 @@ def vcf_to_proteindb(ctx, config_file, transcripts_fasta, translation_table, num
     pipeline_arguments[EnsemblDataService.EXPRESSION_THRESH] = expression_thresh
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.vcf_to_proteindb(transcripts_fasta)
+    ensembl_data_service.dnaseq_to_proteindb(dnaseq_fasta)
 
 
 if __name__ == "__main__":

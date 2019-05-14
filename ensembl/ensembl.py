@@ -9,6 +9,7 @@ from toolbox.general import ParameterConfiguration
 class EnsemblDataService(ParameterConfiguration):
     CONFIG_KEY_VCF = "ensembl_vcf_proteindb"
     TRANSCRIPTS_FASTA = "transcripts_fasta"
+    DNASEQ_FASTA = "dnaseq_fasta"
     TRANSLATION_TABLE = "translation_table"
     MITO_TRANSLATION_TABLE = "mito_translation_table"
     HEADER_VAR_PREFIX = "var_prefix"
@@ -282,7 +283,7 @@ class EnsemblDataService(ParameterConfiguration):
         return feature.chrom, feature.strand, coding_features, feature.attributes[biotype_str][0]
 
     @staticmethod
-    def get_orfs_vep(ref_seq: str, alt_seq: str, translation_table: int, num_orfs=1):
+    def get_orfs_vcf(ref_seq: str, alt_seq: str, translation_table: int, num_orfs=1):
         """
         Translate the coding_ref and the coding_alt into ORFs
         :param ref_seq:
@@ -301,7 +302,7 @@ class EnsemblDataService(ParameterConfiguration):
         return ref_orfs, alt_orfs
 
     @staticmethod
-    def get_orfs_vcf(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int):
+    def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int):
         """translate the coding_ref into ORFs"""
 
         ref_orfs = []
@@ -314,21 +315,21 @@ class EnsemblDataService(ParameterConfiguration):
 
         return ref_orfs
 
-    def vcf_to_proteindb(self, transcripts_fasta):
+    def dnaseq_to_proteindb(self, dnaseq_fasta):
         """
-
-        :param transcripts_fasta:
+        translates DNA sequences to protein sequences
+        :param dnaseq_fasta:
         :return:
         """
 
-        transcripts_dict = SeqIO.index(transcripts_fasta, "fasta")
+        seq_dict = SeqIO.index(dnaseq_fasta, "fasta")
 
         with open(self._proteindb_output, 'w') as prots_fn:
-            for transcript_id in transcripts_dict.keys():
+            for record_id in seq_dict.keys():
 
-                ref_seq = transcripts_dict[
-                    transcript_id].seq  # get the seq and desc for the transcript from the fasta of the gtf
-                desc = str(transcripts_dict[transcript_id].description)
+                ref_seq = seq_dict[
+                    record_id].seq  # get the seq and desc for the record from the fasta of the gtf
+                desc = str(seq_dict[record_id].description)
 
                 key_values = {}  # extract key=value in the desc into a dict
                 for value in desc.split(' '):
@@ -340,16 +341,18 @@ class EnsemblDataService(ParameterConfiguration):
                 this_num_orfs_complement = self._num_orfs_complement
 
                 feature_biotype = ""
-                try:
-                    feature_biotype = key_values[self._biotype_str]
-                except KeyError:
-                    print("Biotype info was not found in the header using {} for record {} {}".format(
-                        self._biotype_str, transcript_id, desc))
+                if self._biotype_str:
+                    try:
+                        feature_biotype = key_values[self._biotype_str]
+                    except KeyError:
+                        print("Biotype info was not found in the header using {} for record {} {}".format(
+                            self._biotype_str, record_id, desc))
 
                 # only include features that have the specified biotypes or they have CDSs info
                 if 'CDS' in key_values.keys() and not self._skip_including_all_cds:
                     pass
-                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or ( feature_biotype not in self._include_biotypes and self._include_biotypes != ['all'])):
+                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or 
+                                               ( feature_biotype not in self._include_biotypes and self._include_biotypes != ['all'])):
                     continue
 
                 # check wether to filter on expression and if it passes
@@ -360,10 +363,10 @@ class EnsemblDataService(ParameterConfiguration):
                     except KeyError:
                         print(
                             "Expression information not found in the fasta header with expression_str: {} for record {} {}".format(
-                                self._expression_str, transcript_id, desc))
+                                self._expression_str, record_id, desc))
                         continue
                     except TypeError:
-                        print("Expression value is not of valid type (float) at record: {} {}".format(transcript_id,
+                        print("Expression value is not of valid type (float) at record: {} {}".format(record_id,
                                                                                                       key_values[
                                                                                                           self._expression_str]))
                         continue
@@ -376,17 +379,17 @@ class EnsemblDataService(ParameterConfiguration):
                         this_num_orfs = 1
                         this_num_orfs_complement = 0
                     except (ValueError, IndexError, KeyError):
-                        print("Could not extra cds position from fasta header for: ", transcript_id, desc)
+                        print("Could not extra cds position from fasta header for: ", record_id, desc)
 
-                ref_orfs = self.get_orfs_vcf(ref_seq, self._translation_table, this_num_orfs, this_num_orfs_complement)
+                ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, this_num_orfs, this_num_orfs_complement)
 
-                self.write_output(seq_id=transcript_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
+                self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
 
         return self._proteindb_output
 
-    def vep_to_proteindb(self, vcf_file, transcripts_fasta, gtf_db_file):
+    def vcf_to_proteindb(self, vcf_file, transcripts_fasta, gtf_db_file):
         """
-        Generate peps for variants by modifying sequences of affected transcripts (VEP annotated).
+        Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
         It only considers variants within potential coding regions of the transcript
         (CDSs & stop codons for protein-coding genes, exons for non-protein coding genes).
         :param vcf_file:
@@ -498,7 +501,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                                                  Seq(str(alt)), int(record.POS), strand,
                                                                                  features_info, cds_info)
                                 if coding_alt_seq != "":
-                                    ref_orfs, alt_orfs = self.get_orfs_vep(coding_ref_seq, coding_alt_seq, trans_table,
+                                    ref_orfs, alt_orfs = self.get_orfs_vcf(coding_ref_seq, coding_alt_seq, trans_table,
                                                                            num_orfs)
 
                                     record_id = ""
@@ -519,7 +522,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                           prots_fn=prots_fn)
 
         return self._proteindb_output
-
+    
     def write_output(self, seq_id, desc, seqs, prots_fn):
         """write the orfs to the output file"""
         write_i = False
