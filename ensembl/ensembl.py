@@ -282,7 +282,7 @@ class EnsemblDataService(ParameterConfiguration):
         return feature.chrom, feature.strand, coding_features, feature.attributes[biotype_str][0]
 
     @staticmethod
-    def get_orfs_vep(ref_seq : str , alt_seq : str, translation_table : int , num_orfs=1):
+    def get_orfs_vep(ref_seq: str, alt_seq: str, translation_table: int, num_orfs=1):
         """
         Translate the coding_ref and the coding_alt into ORFs
         :param ref_seq:
@@ -301,7 +301,7 @@ class EnsemblDataService(ParameterConfiguration):
         return ref_orfs, alt_orfs
 
     @staticmethod
-    def get_orfs_vcf(ref_seq : str, translation_table : int , num_orfs : int , num_orfs_complement : int):
+    def get_orfs_vcf(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int):
         """translate the coding_ref into ORFs"""
 
         ref_orfs = []
@@ -349,9 +349,7 @@ class EnsemblDataService(ParameterConfiguration):
                 # only include features that have the specified biotypes or they have CDSs info
                 if 'CDS' in key_values.keys() and not self._skip_including_all_cds:
                     pass
-                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
-                                               (feature_biotype not in self._include_biotypes and self._include_biotypes != [
-                                                   'all'])):
+                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or ( feature_biotype not in self._include_biotypes and self._include_biotypes != ['all'])):
                     continue
 
                 # check wether to filter on expression and if it passes
@@ -406,7 +404,7 @@ class EnsemblDataService(ParameterConfiguration):
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             for record in vcf_reader:
-                # only process variants above a given allele frequencey threshold
+                # only process variants above a given allele frequency threshold
                 # get AF from the INFO field
                 try:
                     af = float(record.INFO[self._af_field])
@@ -501,7 +499,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                                                  features_info, cds_info)
                                 if coding_alt_seq != "":
                                     ref_orfs, alt_orfs = self.get_orfs_vep(coding_ref_seq, coding_alt_seq, trans_table,
-                                                                       num_orfs)
+                                                                           num_orfs)
 
                                     record_id = ""
                                     if record.ID:
@@ -523,7 +521,7 @@ class EnsemblDataService(ParameterConfiguration):
         return self._proteindb_output
 
     def write_output(self, seq_id, desc, seqs, prots_fn):
-        "write the orfs to the output file"
+        """write the orfs to the output file"""
         write_i = False
         if len(seqs) > 1:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
             write_i = True
@@ -533,7 +531,6 @@ class EnsemblDataService(ParameterConfiguration):
                 prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
             else:
                 prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
-
 
 
 if __name__ == '__main__':

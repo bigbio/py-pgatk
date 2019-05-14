@@ -1,11 +1,11 @@
-'''
+"""
     this script will map proteomics identified peptides to genome and output an peptide gff3 file with coordinates.
     The input peptide table should contain minimum two columns, peptide sequence and Ensembl protein ID.
     Three additional files are required:
     1. Ensembl protein db (same one used in database search)
     2. Ensembl GTF annotation
     3. IDmap file with three columns, first column Ensembl Gene ID, second column Ensembl transcript ID and third Ensembl protein ID.
-'''
+"""
 
 import sys
 import os
@@ -129,7 +129,7 @@ else:
         elif opt == '--prot_col':
             prot_col = int(arg)
         else:
-            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt);
+            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt)
             sys.exit()
 
 print("reading GTF input file")

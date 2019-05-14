@@ -113,7 +113,7 @@ for h in handle_list:
                                 pos = mut_pos - index
                                 des_list.append(str(pos))
                             except IndexError:
-                                continue;
+                                continue
 
                         new_description = ":".join(des_list).replace("*", "-")
                         if peptide not in var_peptidome:

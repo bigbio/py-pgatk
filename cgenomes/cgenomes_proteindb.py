@@ -62,7 +62,7 @@ class CancerGenomesService(ParameterConfiguration):
             if "coding silent" in row[muttype_col]:
                 continue
 
-            snp = SNP(gene=row[gene_col], mRNA=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
+            snp = SNP(gene=row[gene_col], mrna=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
                       type=row[muttype_col])
             header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.type.replace(" ", ""))
             try:
@@ -132,7 +132,7 @@ class CancerGenomesService(ParameterConfiguration):
                             index = snp.aa_mut.index(">")
                         except ValueError:
                             # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type)
-                            continue;
+                            continue
                         mut_aa = snp.aa_mut[index + 1:]
                         if "deletion" in snp.type:
                             try:
@@ -221,10 +221,10 @@ class CancerGenomesService(ParameterConfiguration):
                 varclass = row[class_col]
             except IndexError:
                 print(row)
-                continue;
+                continue
 
             if varclass not in mutclass:
-                continue;
+                continue
 
             if enst in seq_dic:
                 seq = seq_dic[enst]
