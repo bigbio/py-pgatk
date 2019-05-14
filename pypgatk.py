@@ -238,7 +238,7 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
               default='config/ensembl_config.yaml')
 @click.option('--transcripts_fasta', help='Path to the transcript sequence')
 @click.option('--vep_annotated_vcf', help='Path to the vep annotated VCF file')
-@click.option('--gene_annotated_gtf', help='Path to the gene annotations file')
+@click.option('--gene_annotations_gtf', help='Path to the gene annotations file')
 @click.option('--translation_table', default=1, type=int, help="Translation table (Default 1) ")
 @click.option('--mito_translation_table', default=2, type=int, help='Mito_trans_table (default 2)')
 @click.option('--var_prefix', default="var", help="String to add before the variant peptides")
@@ -264,12 +264,12 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
 @click.option('--biotype_str', default='transcript_biotype',
               help='string used to identify gene/transcript biotype in the gtf file.')
 @click.pass_context
-def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gene_annotated_gtf, translation_table,
+def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
                      af_field, af_threshold, transcript_index, consequence_index, exclude_biotypes,
                      exclude_consequences, skip_including_all_cds, include_biotypes, include_consequences, biotype_str):
-    if transcripts_fasta is None or vep_annotated_vcf is None or gene_annotated_gtf is None:
+    if transcripts_fasta is None or vep_annotated_vcf is None or gene_annotations_gtf is None:
         print_help()
 
     pipeline_arguments = {}
@@ -291,7 +291,7 @@ def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gen
     pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.vep_to_proteindb(vep_annotated_vcf, transcripts_fasta, gene_annotated_gtf)
+    ensembl_data_service.vep_to_proteindb(vep_annotated_vcf, transcripts_fasta, gene_annotations_gtf)
 
 
 @cli.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")

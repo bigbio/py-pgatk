@@ -245,15 +245,15 @@ class EnsemblDataService(ParameterConfiguration):
         return ref_seq, alt_seq
 
     @staticmethod
-    def parse_gtf(gtf_fn, gtf_db_file):
+    def parse_gtf(gene_annotations_gtf, gtf_db_file):
         """
         Convert GTF file into a FeatureDB
-        :param gtf_fn:
+        :param gene_annotations_gtf:
         :param gtf_db_file:
         :return:
         """
         try:
-            gffutils.create_db(gtf_fn, gtf_db_file, merge_strategy="create_unique",
+            gffutils.create_db(gene_annotations_gtf, gtf_db_file, merge_strategy="create_unique",
                                keep_order=True, disable_infer_transcripts=True, disable_infer_genes=True,
                                verbose=True,
                                force=False)
@@ -387,7 +387,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         return self._proteindb_output
 
-    def vcf_to_proteindb(self, vcf_file, transcripts_fasta, gtf_db_file):
+    def vcf_to_proteindb(self, vcf_file, transcripts_fasta, gene_annotations_gtf):
         """
         Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
         It only considers variants within potential coding regions of the transcript
@@ -398,7 +398,7 @@ class EnsemblDataService(ParameterConfiguration):
         :return:
         """
 
-        db = self.parse_gtf(gtf_db_file, gtf_db_file.replace('.gtf', '.db'))
+        db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
         transcripts_dict = SeqIO.index(transcripts_fasta, "fasta")
         # handle cases where the transript has version in the GTF but not in the VCF

@@ -13,7 +13,7 @@ def vcf_to_proteindb():
                            ['vcf-to-proteindb', '--config_file', '../config/ensembl_config.yaml', 
                             '--vep_annotated_vcf', '../testdata/test.vcf', 
                             '--transcript_fasta', '../testdata/test_transcripts.fa',
-                            '--gene_annotated_gtf', '../testdata/test.gtf', 
+                            '--gene_annotations_gtf', '../testdata/test.gtf', 
                             '--output_proteindb', '../testdata/proteindb_fromVCF.fa'])
     assert result.exit_code == 0
 
