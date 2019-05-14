@@ -233,7 +233,7 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
     ensembl_data_service.three_frame_translation(input)
 
 
-@cli.command('vep-to-proteindb', short_help="Generate peptides based on DNA variants from ENSEMBL VEP VCF files")
+@cli.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants from ENSEMBL VEP VCF files")
 @click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
               default='config/ensembl_config.yaml')
 @click.option('--transcripts_fasta', help='Path to the transcript sequence')
