@@ -7,7 +7,7 @@ from toolbox.general import ParameterConfiguration
 
 
 class EnsemblDataService(ParameterConfiguration):
-    CONFIG_KEY_VCF = "ensembl_vcf_proteindb"
+    CONFIG_KEY_VCF = "ensembl_translation"
     INPUT_FASTA = "input_fasta"
     TRANSLATION_TABLE = "translation_table"
     MITO_TRANSLATION_TABLE = "mito_translation_table"
