@@ -30,8 +30,8 @@ def vcf_gnomad_to_proteindb():
                             '--output_proteindb', '../testdata/proteindb_from_gnomad_VCF.fa',
                             '--af_field', 'controls_AF', 
                             '--transcript_index', 6, 
-                            'biotype_str', 'transcript_type',
-                            'annotation_field_name', 'vep'])
+                            '--biotype_str', 'transcript_type',
+                            '--annotation_field_name', 'vep'])
     assert result.exit_code == 0
 
 def dnaseq_to_proteindb():
@@ -56,7 +56,7 @@ def dnaseq_lncRNAs_to_proteindb():
                            ['dnaseq-to-proteindb', '--config_file', '../config/ensembl_config.yaml', 
                             '--input_fasta', '../testdata/test.fa', 
                             '--output_proteindb', '../testdata/proteindb_from_lncRNAs_DNAseq.fa',
-                            '--include_biotypes', '3prime overlapping ncrna, ambiguous orf, antisense, antisense RNA, lincRNA, ncrna host, processed transcript, sense intronic, sense overlapping', 
+                            '--include_biotypes', '3prime_overlapping_ncrna, ambiguous_orf, antisense, antisense_RNA, lincRNA, ncrna_host, processed_transcript, sense_intronic, sense_overlapping', 
                             '--skip_including_all_cds'])
     assert result.exit_code == 0
 
@@ -70,7 +70,7 @@ def dnaseq_sncRNAs_to_proteindb():
                            ['dnaseq-to-proteindb', '--config_file', '../config/ensembl_config.yaml', 
                             '--input_fasta', '../testdata/test.fa', 
                             '--output_proteindb', '../testdata/proteindb_from_lncRNAs_DNAseq.fa',
-                            '--include_biotypes', 'miRNA, miRNA_pseudogene, miscRNA, miscRNA pseudogene, Mt rRNA, Mt tRNA, rRNA, scRNA, snlRNA, snoRNA, snRNA, tRNA, tRNA_pseudogene', 
+                            '--include_biotypes', 'miRNA, miRNA_pseudogene, miscRNA, miscRNA_pseudogene, Mt_rRNA, Mt_tRNA, rRNA, scRNA, snlRNA, snoRNA, snRNA, tRNA, tRNA_pseudogene', 
                             '--skip_including_all_cds'])
     assert result.exit_code == 0
 
@@ -84,7 +84,7 @@ def dnaseq_pseudogenes_to_proteindb():
                            ['dnaseq-to-proteindb', '--config_file', '../config/ensembl_config.yaml', 
                             '--input_fasta', '../testdata/test.fa', 
                             '--output_proteindb', '../testdata/proteindb_from_pseudogenes_DNAseq.fa',
-                            '--include_biotypes', 'disrupted domain, IGC pseudogene, IGJ pseudogene, IG pseudogene, IGV pseudogene, processed pseudogene, transcribed processed pseudogene, transcribed unitary pseudogene, transcribed unprocessed pseudogene, translated processed pseudogene, TRJ pseudogene, unprocessed pseudogene', 
+                            '--include_biotypes', 'disrupted_domain, IGC_pseudogene, IGJ_pseudogene, IG_pseudogene, IGV_pseudogene, processed_pseudogene, transcribed_processed_pseudogene, transcribed_unitary_pseudogene, transcribed_unprocessed_pseudogene, translated_processed_pseudogene, TRJ_pseudogene, unprocessed_pseudogene', 
                             '--skip_including_all_cds'])
     assert result.exit_code == 0
 

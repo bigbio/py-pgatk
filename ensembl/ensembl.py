@@ -29,7 +29,7 @@ class EnsemblDataService(ParameterConfiguration):
     CONFIG_KEY_DATA = "enmsembl_translation"
     NUM_ORFS = "num_orfs"
     NUM_ORFS_COMPLEMENT = "num_orfs_complement"
-    EXPRESSION_STR = ""
+    EXPRESSION_STR = "expression_str"
     EXPRESSION_THRESH = "expression_thresh"
     IGNORE_FILTERS = "ignore_filters"
     ACCEPTED_FILTERS = "accepted_filters"
@@ -48,8 +48,7 @@ class EnsemblDataService(ParameterConfiguration):
         if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
             self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
 
-        self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.TRANSLATION_TABLE]
+        self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.TRANSLATION_TABLE]
         if self.TRANSLATION_TABLE in self.get_pipeline_parameters():
             self._translation_table = self.get_pipeline_parameters()[self.TRANSLATION_TABLE]
 
@@ -321,11 +320,11 @@ class EnsemblDataService(ParameterConfiguration):
 
         ref_orfs = []
         for n in range(0, num_orfs):
-            ref_orfs.append(ref_seq[n::].translate(translation_table, to_stop))
+            ref_orfs.append(ref_seq[n::].translate(translation_table, to_stop = to_stop))
 
         rev_ref_seq = ref_seq.reverse_complement()
         for n in range(0, num_orfs_complement):
-            ref_orfs.append(rev_ref_seq[n::].translate(translation_table, to_stop))
+            ref_orfs.append(rev_ref_seq[n::].translate(translation_table, to_stop = to_stop))
 
         return ref_orfs
 
@@ -361,9 +360,9 @@ class EnsemblDataService(ParameterConfiguration):
                             self._biotype_str, record_id, desc))
 
                 # only include features that have the specified biotypes or they have CDSs info
-                if 'CDS' in key_values.keys() and not self._skip_including_all_cds:
+                if 'CDS' in key_values.keys() and (not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
                     pass
-                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or 
+                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
                                                ( feature_biotype not in self._include_biotypes and self._include_biotypes != ['all'])):
                     continue
 
@@ -424,11 +423,12 @@ class EnsemblDataService(ParameterConfiguration):
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             for record in vcf_reader:
-                #None and empty means PASS otherwise check if it is subset of the accepted filters
-                if not self._ignore_filters:
-                    if not record.FILTER and not (set(record.FILTER) <= set(self._accepted_filters)):
+                
+                if not self._ignore_filters: 
+                    if record.FILTER: #if not PASS: None and empty means PASS
+                        if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
                             continue
-                 
+
                 # only process variants above a given allele frequency threshold if the AF string is not empty
                 if self._af_field:
                     # get AF from the INFO field
@@ -438,7 +438,7 @@ class EnsemblDataService(ParameterConfiguration):
                         af = float(record.INFO[self._af_field][0])
                     except KeyError:
                         continue
-    
+
                     # check if the AF passed the threshold
                     if af < self._af_threshold:
                         continue
