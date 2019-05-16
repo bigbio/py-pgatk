@@ -554,9 +554,9 @@ class EnsemblDataService(ParameterConfiguration):
 
         for i, orf in enumerate(seqs):
             if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-                prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
-            else:
                 prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
+            else:
+                prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
 
 
 if __name__ == '__main__':
