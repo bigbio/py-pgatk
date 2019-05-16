@@ -204,10 +204,9 @@ def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_
     if input_mutation is None or input_cds is None or output_db is None:
         print_help()
 
-    pipeline_arguments = {}
-    pipeline_arguments[CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE] = input_mutation
-    pipeline_arguments[CancerGenomesService.CONFIG_COMPLETE_GENES_FILE] = input_cds
-    pipeline_arguments[CancerGenomesService.CONFIG_OUTPUT_FILE] = output_db
+    pipeline_arguments = {CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE: input_mutation,
+                          CancerGenomesService.CONFIG_COMPLETE_GENES_FILE: input_cds,
+                          CancerGenomesService.CONFIG_OUTPUT_FILE: output_db}
 
     cosmic_to_proteindb_service = CancerGenomesService(config_file, pipeline_arguments)
     cosmic_to_proteindb_service.cbioportal_to_proteindb()
