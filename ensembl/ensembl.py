@@ -8,8 +8,7 @@ from toolbox.general import ParameterConfiguration
 
 class EnsemblDataService(ParameterConfiguration):
     CONFIG_KEY_VCF = "ensembl_translation"
-    TRANSCRIPTS_FASTA = "transcripts_fasta"
-    DNASEQ_FASTA = "dnaseq_fasta"
+    INPUT_FASTA = "input_fasta"
     TRANSLATION_TABLE = "translation_table"
     MITO_TRANSLATION_TABLE = "mito_translation_table"
     HEADER_VAR_PREFIX = "var_prefix"
@@ -30,8 +29,11 @@ class EnsemblDataService(ParameterConfiguration):
     CONFIG_KEY_DATA = "enmsembl_translation"
     NUM_ORFS = "num_orfs"
     NUM_ORFS_COMPLEMENT = "num_orfs_complement"
-    EXPRESSION_STR = ""
+    EXPRESSION_STR = "expression_str"
     EXPRESSION_THRESH = "expression_thresh"
+    IGNORE_FILTERS = "ignore_filters"
+    ACCEPTED_FILTERS = "accepted_filters"
+    
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -46,8 +48,7 @@ class EnsemblDataService(ParameterConfiguration):
         if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
             self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
 
-        self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-            self.TRANSLATION_TABLE]
+        self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.TRANSLATION_TABLE]
         if self.TRANSLATION_TABLE in self.get_pipeline_parameters():
             self._translation_table = self.get_pipeline_parameters()[self.TRANSLATION_TABLE]
 
@@ -104,8 +105,8 @@ class EnsemblDataService(ParameterConfiguration):
 
         self._skip_including_all_cds = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.SKIP_INCLUDING_ALL_CDS]
-        if self.ANNOTATION_FIELD_NAME in self.get_pipeline_parameters():
-            self._annotation_field_name = self.get_pipeline_parameters()[self.ANNOTATION_FIELD_NAME]
+        if self.SKIP_INCLUDING_ALL_CDS in self.get_pipeline_parameters():
+            self._skip_including_all_cds = self.get_pipeline_parameters()[self.SKIP_INCLUDING_ALL_CDS]
 
         self._include_biotypes = self.get_multiple_options(
             self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_BIOTYPES])
@@ -142,15 +143,27 @@ class EnsemblDataService(ParameterConfiguration):
         if self.EXPRESSION_THRESH is self.get_pipeline_parameters():
             self._expression_thresh = self.get_pipeline_parameters()[self.EXPRESSION_THRESH]
 
-    def three_frame_translation(self, input_file):
+        self._ignore_filters = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
+            self.IGNORE_FILTERS]
+        if self.IGNORE_FILTERS in self.get_pipeline_parameters():
+            self._ignore_filters = self.get_pipeline_parameters()[self.IGNORE_FILTERS]
+            
+        self._accepted_filters = self.get_multiple_options(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.ACCEPTED_FILTERS])
+        if self.ACCEPTED_FILTERS in self.get_pipeline_parameters():
+            self._accepted_filters = self.get_multiple_options(
+                self.get_pipeline_parameters()[self.ACCEPTED_FILTERS])
+            
+            
+    def three_frame_translation(self, input_fasta):
         """
         This function translate a transcriptome into a 3'frame translation protein sequence database
-        :param input_file: input file
+        :param input_fasta: fasta input file
         :param output_file: output file
         :return:
         """
 
-        input_handle = open(input_file, 'r')
+        input_handle = open(input_fasta, 'r')
         output_handle = open(self._proteindb_output, 'rw')
 
         for record in SeqIO.parse(input_handle, 'fasta'):
@@ -302,27 +315,27 @@ class EnsemblDataService(ParameterConfiguration):
         return ref_orfs, alt_orfs
 
     @staticmethod
-    def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int):
+    def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int, to_stop: bool):
         """translate the coding_ref into ORFs"""
 
         ref_orfs = []
         for n in range(0, num_orfs):
-            ref_orfs.append(ref_seq[n::].translate(translation_table))
+            ref_orfs.append(ref_seq[n::].translate(translation_table, to_stop = to_stop))
 
         rev_ref_seq = ref_seq.reverse_complement()
         for n in range(0, num_orfs_complement):
-            ref_orfs.append(rev_ref_seq[n::].translate(translation_table))
+            ref_orfs.append(rev_ref_seq[n::].translate(translation_table, to_stop = to_stop))
 
         return ref_orfs
 
-    def dnaseq_to_proteindb(self, dnaseq_fasta):
+    def dnaseq_to_proteindb(self, input_fasta):
         """
         translates DNA sequences to protein sequences
-        :param dnaseq_fasta:
+        :param input_fasta:
         :return:
         """
 
-        seq_dict = SeqIO.index(dnaseq_fasta, "fasta")
+        seq_dict = SeqIO.index(input_fasta, "fasta")
 
         with open(self._proteindb_output, 'w') as prots_fn:
             for record_id in seq_dict.keys():
@@ -347,9 +360,9 @@ class EnsemblDataService(ParameterConfiguration):
                             self._biotype_str, record_id, desc))
 
                 # only include features that have the specified biotypes or they have CDSs info
-                if 'CDS' in key_values.keys() and not self._skip_including_all_cds:
+                if 'CDS' in key_values.keys() and (not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
                     pass
-                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or 
+                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
                                                ( feature_biotype not in self._include_biotypes and self._include_biotypes != ['all'])):
                     continue
 
@@ -374,7 +387,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                       ('altORFs' in self._include_biotypes or
                                                    self._include_biotypes==['all'])):
                     ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, self._num_orfs, 
-                                                 self._num_orfs_complement)
+                                                 self._num_orfs_complement, to_stop=False)
 
                     self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
 
@@ -383,14 +396,14 @@ class EnsemblDataService(ParameterConfiguration):
                     try:
                         cds_info = [int(x) for x in key_values['CDS'].split('-')]
                         ref_seq = ref_seq[cds_info[0] - 1:cds_info[1]]
-                        ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, 1, 0)
+                        ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, 1, 0, to_stop=True)
                         self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
                     except (ValueError, IndexError, KeyError):
                         print("Could not extra cds position from fasta header for: ", record_id, desc)
 
         return self._proteindb_output
 
-    def vcf_to_proteindb(self, vcf_file, transcripts_fasta, gene_annotations_gtf):
+    def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
         """
         Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
         It only considers variants within potential coding regions of the transcript
@@ -403,13 +416,19 @@ class EnsemblDataService(ParameterConfiguration):
 
         db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
-        transcripts_dict = SeqIO.index(transcripts_fasta, "fasta")
+        transcripts_dict = SeqIO.index(input_fasta, "fasta")
         # handle cases where the transript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
 
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             for record in vcf_reader:
+                
+                if not self._ignore_filters: 
+                    if record.FILTER: #if not PASS: None and empty means PASS
+                        if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
+                            continue
+
                 # only process variants above a given allele frequency threshold if the AF string is not empty
                 if self._af_field:
                     # get AF from the INFO field
@@ -419,7 +438,7 @@ class EnsemblDataService(ParameterConfiguration):
                         af = float(record.INFO[self._af_field][0])
                     except KeyError:
                         continue
-    
+
                     # check if the AF passed the threshold
                     if af < self._af_threshold:
                         continue
@@ -495,35 +514,35 @@ class EnsemblDataService(ParameterConfiguration):
                         continue
 
                     for alt in record.ALT:  # in cases of multiple alternative alleles consider all
-                        if transcript_id + str(
-                                alt) not in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
-                            processed_transcript_allele.append(transcript_id + str(alt))
-                            "for non-CDSs, only consider the exon that actually overlaps the variant"
-                            if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
-                                    self.check_overlap(record.POS, record.POS + len(alt), features_info)):
-                                coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
-                                                                                 Seq(str(alt)), int(record.POS), strand,
-                                                                                 features_info, cds_info)
-                                if coding_alt_seq != "":
-                                    ref_orfs, alt_orfs = self.get_orfs_vcf(coding_ref_seq, coding_alt_seq, trans_table,
-                                                                           num_orfs)
+                        if transcript_id + str(record.REF) + str(alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
+                            continue
+                        
+                        processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
+                        "for non-CDSs, only consider the exon that actually overlaps the variant"
+                        if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
+                                self.check_overlap(record.POS, record.POS + len(alt), features_info)):
+                            coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
+                                                                             Seq(str(alt)), int(record.POS), strand,
+                                                                             features_info, cds_info)
+                            if coding_alt_seq != "":
+                                ref_orfs, alt_orfs = self.get_orfs_vcf(coding_ref_seq, coding_alt_seq, trans_table,
+                                                                       num_orfs)
+                                record_id = ""
+                                if record.ID:
+                                    record_id = '_' + str(record.ID)
+                                self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
+                                                                   '.'.join([str(record.CHROM), str(record.POS),
+                                                                             str(record.REF), str(alt)]),
+                                                                   transcript_id_v]),
+                                                  desc=feature_biotype + ":" + consequence,
+                                                  seqs=alt_orfs,
+                                                  prots_fn=prots_fn)
 
-                                    record_id = ""
-                                    if record.ID:
-                                        record_id = '_' + str(record.ID)
-                                    self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
-                                                                       '.'.join([str(record.CHROM), str(record.POS),
-                                                                                 str(record.REF), str(alt)]),
-                                                                       transcript_id_v]),
-                                                      desc=feature_biotype + ":" + consequence,
-                                                      seqs=alt_orfs,
+                                if self._report_reference_seq:
+                                    self.write_output(seq_id=transcript_id_v,
+                                                      desc=feature_biotype,
+                                                      seqs=ref_orfs,
                                                       prots_fn=prots_fn)
-
-                                    if self._report_reference_seq:
-                                        self.write_output(seq_id=transcript_id_v,
-                                                          desc=feature_biotype,
-                                                          seqs=ref_orfs,
-                                                          prots_fn=prots_fn)
 
         return self._proteindb_output
     
@@ -535,9 +554,9 @@ class EnsemblDataService(ParameterConfiguration):
 
         for i, orf in enumerate(seqs):
             if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-                prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
-            else:
                 prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
+            else:
+                prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
 
 
 if __name__ == '__main__':

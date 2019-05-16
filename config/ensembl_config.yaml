@@ -11,7 +11,7 @@ enmsembl_translation:
     transcript_index: 3
     consequence_index: 1
     exclude_biotypes: ''
-    exclude_consequences: 'downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant'
+    exclude_consequences: 'downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant'
     skip_including_all_cds: False
     include_biotypes: ''
     include_consequences: 'all'
@@ -20,6 +20,8 @@ enmsembl_translation:
     num_orfs_complement: 0
     expression_str: ""
     expression_thresh: 5.0
+    ignore_filters: False
+    accepted_filters: ''
   logger:
     formatters:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
