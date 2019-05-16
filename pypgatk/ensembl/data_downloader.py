@@ -11,7 +11,7 @@ from json import loads
 
 from requests import get
 
-from toolbox.general import ParameterConfiguration, check_create_folders, download_file
+from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 
 
 class EnsemblDataDownloadService(ParameterConfiguration):

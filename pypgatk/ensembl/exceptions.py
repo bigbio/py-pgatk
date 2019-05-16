@@ -1,7 +1,7 @@
 """
 Ensembl module related exceptions
 """
-from toolbox.exceptions import AppException
+from pypgatk.toolbox.exceptions import AppException
 
 
 class EnsemblServiceException(AppException):

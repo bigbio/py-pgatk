@@ -10,9 +10,11 @@ import shutil
 import subprocess
 from urllib import error, request
 import yaml
-from toolbox.exceptions import ToolBoxException
+
 
 # Logging defaults
+from pypgatk.toolbox.exceptions import ToolBoxException
+
 _logger_formatters = {
     "DEBUG": "%(asctime)s [%(levelname)7s][%(name)28s][%(module)18s, %(lineno)4s] %(message)s",
     "INFO": "%(asctime)s [%(levelname)7s][%(name)28s] %(message)s"

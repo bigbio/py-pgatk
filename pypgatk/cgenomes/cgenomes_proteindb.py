@@ -1,8 +1,9 @@
 import re
 
 from Bio import SeqIO
-from cgenomes.models import SNP
-from toolbox.general import ParameterConfiguration
+
+from pypgatk.cgenomes.models import SNP
+from pypgatk.toolbox.general import ParameterConfiguration
 
 
 class CancerGenomesService(ParameterConfiguration):

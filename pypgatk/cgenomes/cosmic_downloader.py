@@ -2,7 +2,8 @@ import base64
 import json
 
 import requests
-from toolbox.general import ParameterConfiguration, check_create_folders
+
+from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders
 
 
 class CosmicDownloadService(ParameterConfiguration):

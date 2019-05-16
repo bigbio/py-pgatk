@@ -3,7 +3,7 @@ import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
 
-from toolbox.general import ParameterConfiguration
+from pypgatk.toolbox.general import ParameterConfiguration
 
 
 class EnsemblDataService(ParameterConfiguration):

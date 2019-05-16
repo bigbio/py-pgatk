@@ -2,8 +2,8 @@ import csv
 
 from requests import get
 
-from toolbox.exceptions import AppException
-from toolbox.general import ParameterConfiguration, check_create_folders, download_file
+from pypgatk.toolbox.exceptions import AppException
+from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 
 
 class CbioPortalDownloadService(ParameterConfiguration):

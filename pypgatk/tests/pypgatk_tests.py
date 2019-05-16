@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from pypgatk import cli
+from pypgatk.pypgatk_cli import cli
 
 
 def vcf_to_proteindb():
