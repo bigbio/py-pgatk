@@ -7,7 +7,7 @@ from toolbox.general import ParameterConfiguration
 
 
 class EnsemblDataService(ParameterConfiguration):
-    CONFIG_KEY_VCF = "ensembl_vcf_proteindb"
+    CONFIG_KEY_VCF = "ensembl_translation"
     TRANSCRIPTS_FASTA = "transcripts_fasta"
     DNASEQ_FASTA = "dnaseq_fasta"
     TRANSLATION_TABLE = "translation_table"
