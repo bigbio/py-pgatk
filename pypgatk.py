@@ -218,25 +218,25 @@ def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_
               '-c',
               help='Configuration to perform conversion between ENSEMBL Files',
               default='config/ensembl_config.yaml')
-@click.option('-in', '--input', help='input file to perform the translation')
+@click.option('-in', '--input_fasta', help='input_fasta file to perform the translation')
 @click.option('-t', '--translation_table', help='Translation table default value 1', default='1')
 @click.option('-out', '--output', help='Output File', default="peptide-database.fa")
 @click.pass_context
-def threeframe_translation(ctx, config_file, input, translation_table, output):
-    if input is None:
+def threeframe_translation(ctx, config_file, input_fasta, translation_table, output):
+    if input_fasta is None:
         print_help()
 
     pipeline_arguments = {EnsemblDataService.TRANSLATION_TABLE: translation_table,
                           EnsemblDataService.PROTEIN_DB_OUTPUT: output}
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.three_frame_translation(input)
+    ensembl_data_service.three_frame_translation(input_fasta)
 
 
 @cli.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants from ENSEMBL VEP VCF files")
 @click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
               default='config/ensembl_config.yaml')
-@click.option('--transcripts_fasta', help='Path to the transcript sequence')
+@click.option('--input_fasta', help='Path to the transcript sequence')
 @click.option('--vep_annotated_vcf', help='Path to the vep annotated VCF file')
 @click.option('--gene_annotations_gtf', help='Path to the gene annotations file')
 @click.option('--translation_table', default=1, type=int, help="Translation table (Default 1) ")
@@ -263,13 +263,19 @@ def threeframe_translation(ctx, config_file, input, translation_table, output):
 @click.option('--include_consequences', default='all', help="included_consequences, default all")
 @click.option('--biotype_str', default='transcript_biotype',
               help='string used to identify gene/transcript biotype in the gtf file.')
+@click.option('--ignore_filters',
+              help="enabling this option causes or variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER column is PASS, None, .) or if the filters are subset of the accepted filters. (default is False)",
+              is_flag=True)
+@click.option('--accepted_filters', default='', help="Accepted filters for variant parsing")
+
 @click.pass_context
-def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gene_annotations_gtf, translation_table,
+def vcf_to_proteindb(ctx, config_file, input_fasta, vep_annotated_vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
                      af_field, af_threshold, transcript_index, consequence_index, exclude_biotypes,
-                     exclude_consequences, skip_including_all_cds, include_biotypes, include_consequences, biotype_str):
-    if transcripts_fasta is None or vep_annotated_vcf is None or gene_annotations_gtf is None:
+                     exclude_consequences, skip_including_all_cds, include_biotypes, include_consequences, biotype_str,
+                     ignore_filters, accepted_filters):
+    if input_fasta is None or vep_annotated_vcf is None or gene_annotations_gtf is None:
         print_help()
 
     pipeline_arguments = {}
@@ -289,15 +295,17 @@ def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gen
     pipeline_arguments[EnsemblDataService.INCLUDE_BIOTYPES] = include_biotypes
     pipeline_arguments[EnsemblDataService.INCLUDE_CONSEQUENCES] = include_consequences
     pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
+    pipeline_arguments[EnsemblDataService.IGNORE_FILTERS] = ignore_filters
+    pipeline_arguments[EnsemblDataService.ACCEPTED_FILTERS] = accepted_filters
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.vep_to_proteindb(vep_annotated_vcf, transcripts_fasta, gene_annotations_gtf)
+    ensembl_data_service.vcf_to_proteindb(vep_annotated_vcf, input_fasta, gene_annotations_gtf)
 
 
 @cli.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
 @click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
               default='config/ensembl_config.yaml')
-@click.option('--dnaseq_fasta', help='Path to sequences fasta')
+@click.option('--input_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
 @click.option('--num_orfs', default=3, type=int, help='Number of ORFs (default 0)')
 @click.option('--num_orfs_complement', default=0, type=int,
@@ -315,11 +323,11 @@ def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gen
 @click.option('--expression_thresh', default=5.0, type=float,
               help='Threshold used to filter transcripts based on their expression values')
 @click.pass_context
-def dnaseq_to_proteindb(ctx, config_file, dnaseq_fasta, translation_table, num_orfs, num_orfs_complement,
+def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_orfs, num_orfs_complement,
                      output_proteindb,
                      skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, expression_str,
                      expression_thresh):
-    if dnaseq_fasta is None:
+    if input_fasta is None:
         print_help()
 
     pipeline_arguments = {}
@@ -335,7 +343,7 @@ def dnaseq_to_proteindb(ctx, config_file, dnaseq_fasta, translation_table, num_o
     pipeline_arguments[EnsemblDataService.EXPRESSION_THRESH] = expression_thresh
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-    ensembl_data_service.dnaseq_to_proteindb(dnaseq_fasta)
+    ensembl_data_service.dnaseq_to_proteindb(input_fasta)
 
 
 if __name__ == "__main__":
