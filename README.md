@@ -3,11 +3,11 @@
 
 **pypgatk** is a Python framework for part of the ProteoGenomics Analysis Toolkit. It provides different tools for proteogenomics data analysis such as:
 
-In order to execute a task in `pypgatk` the user should use a `COMMAND` that perform the specific task and the specific task arguments/options:
+In order to execute a task in `pypgatk_cli` the user should use a `COMMAND` that perform the specific task and the specific task arguments/options:
 
 ```bash
-$: python3.7 pypgatk -h
-Usage: pypgatk.py [OPTIONS] COMMAND [ARGS]...
+$: python3.7 pypgatk_cli.py -h
+Usage: pypgatk_cli.py [OPTIONS] COMMAND [ARGS]...
 
   This is the main tool that give access to all commands and options provided by the pypgatk
 
@@ -40,8 +40,8 @@ Downloading data from [ENSEMBL](https://www.ensembl.org/info/data/ftp/index.html
 By default the command `ensembl-downloader` download all file types for all the ensembl species.
 
 ```bash
-$: python3.7 pypgatk.py ensembl-downloader -h
-Usage: pypgatk.py ensembl-downloader [OPTIONS]
+$: python3.7 pypgatk_cli.py ensembl-downloader -h
+Usage: pypgatk_cli.py ensembl-downloader [OPTIONS]
 
   This tool enables to download from enseml ftp the FASTA and GTF files
 
@@ -71,8 +71,8 @@ Downloading mutation data from [COSMIC](https://cancer.sanger.ac.uk/cosmic) is p
 - Cosmic all genes (All_COSMIC_Genes)
 
 ```bash
-$: python3.7 pypgatk.py cosmic-downloader -h
-Usage: pypgatk.py cosmic-downloader [OPTIONS]
+$: python3.7 pypgatk_cli.py cosmic-downloader -h
+Usage: pypgatk_cli.py cosmic-downloader [OPTIONS]
 
 Options:
   -c, --config_file TEXT       Configuration file for the ensembl data downloader pipeline
@@ -91,8 +91,8 @@ Downloading mutation data from [cBioPortal](https://www.cbioportal.org/) is perf
 
 ```bash
 
-$: python3.7 pypgatk.py cbioportal-downloader -h
-Usage: pypgatk.py cbioportal-downloader [OPTIONS]
+$: python3.7 pypgatk_cli.py cbioportal-downloader -h
+Usage: pypgatk_cli.py cbioportal-downloader [OPTIONS]
 
 Options:
   -c, --config_file TEXT       Configuration file for the ensembl data
@@ -120,8 +120,8 @@ The pypgatk framework provides a set of tools (COMMAND) to convert genome mutati
 The current tool use the command `cosmic-to-proteindb` to convert the cosmic somatic mutations file into a protein sequence database file.
 
 ```bash
-$: python3.7 pypgatk.py cosmic-to-proteindb -h
-Usage: pypgatk.py cosmic-to-proteindb [OPTIONS]
+$: python3.7 pypgatk_cli.py cosmic-to-proteindb -h
+Usage: pypgatk_cli.py cosmic-to-proteindb [OPTIONS]
 
 Options:
   -c, --config_file TEXT      Configuration file for the cosmic data pipelines
@@ -143,8 +143,8 @@ The cBioPortal for Cancer Genomics provides visualization, analysis and download
 The current tool use the command `cbioportal-to-proteindb` to convert the bcioportal mutations file into a protein sequence database file.
 
 ```bash
-$: python3.7 pypgatk.py cbioportal-to-proteindb -h
-Usage: pypgatk.py cbioportal-to-proteindb [OPTIONS]
+$: python3.7 pypgatk_cli.py cbioportal-to-proteindb -h
+Usage: pypgatk_cli.py cbioportal-to-proteindb [OPTIONS]
 
 Options:
   -c, --config_file TEXT      Configuration for
