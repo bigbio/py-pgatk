@@ -337,8 +337,6 @@ class EnsemblDataService(ParameterConfiguration):
                         key_values[value.split('=')[0]] = value.split('=')[1]
                     except IndexError:
                         continue
-                this_num_orfs = self._num_orfs
-                this_num_orfs_complement = self._num_orfs_complement
 
                 feature_biotype = ""
                 if self._biotype_str:
@@ -371,19 +369,24 @@ class EnsemblDataService(ParameterConfiguration):
                                                                                                           self._expression_str]))
                         continue
 
-                # check if cds info exists in the fasta header otherwise translate the whole sequences (3 ORFs)
-                if 'CDS' in key_values.keys():
+                #translate the whole sequences (3 ORFs) for non CDS sequences and not take alt_ORFs for CDSs
+                if 'CDS' not in key_values.keys() or ('CDS' in key_values.keys() and 
+                                                      ('altORFs' in self._include_biotypes or
+                                                   self._include_biotypes==['all'])):
+                    ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, self._num_orfs, 
+                                                 self._num_orfs_complement)
+
+                    self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
+
+                # also allow for direct translation of the CDS, when the cds info exists in the fasta header skip_including_all_cds is false
+                if 'CDS' in key_values.keys() and not self._skip_including_all_cds:
                     try:
                         cds_info = [int(x) for x in key_values['CDS'].split('-')]
                         ref_seq = ref_seq[cds_info[0] - 1:cds_info[1]]
-                        this_num_orfs = 1
-                        this_num_orfs_complement = 0
+                        ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, 1, 0)
+                        self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
                     except (ValueError, IndexError, KeyError):
                         print("Could not extra cds position from fasta header for: ", record_id, desc)
-
-                ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, this_num_orfs, this_num_orfs_complement)
-
-                self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
 
         return self._proteindb_output
 
@@ -407,18 +410,19 @@ class EnsemblDataService(ParameterConfiguration):
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             for record in vcf_reader:
-                # only process variants above a given allele frequency threshold
-                # get AF from the INFO field
-                try:
-                    af = float(record.INFO[self._af_field])
-                except TypeError:
-                    af = float(record.INFO[self._af_field][0])
-                except KeyError:
-                    continue
-
-                # check if the AF passed the threshold
-                if af < self._af_threshold:
-                    continue
+                # only process variants above a given allele frequency threshold if the AF string is not empty
+                if self._af_field:
+                    # get AF from the INFO field
+                    try:
+                        af = float(record.INFO[self._af_field])
+                    except TypeError:
+                        af = float(record.INFO[self._af_field][0])
+                    except KeyError:
+                        continue
+    
+                    # check if the AF passed the threshold
+                    if af < self._af_threshold:
+                        continue
 
                 trans_table = self._translation_table
                 consequences = []

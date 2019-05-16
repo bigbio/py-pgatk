@@ -299,12 +299,12 @@ def vcf_to_proteindb(ctx, config_file, transcripts_fasta, vep_annotated_vcf, gen
               default='config/ensembl_config.yaml')
 @click.option('--dnaseq_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
-@click.option('--num_orfs', default=3, type=int, help='for genes lacking CDS info, specify number of ORFs (default 0)')
+@click.option('--num_orfs', default=3, type=int, help='Number of ORFs (default 0)')
 @click.option('--num_orfs_complement', default=0, type=int,
-              help='For genes lacking CDS info, specify number of ORFs from the reverse side (default 0)')
+              help='Number of ORFs from the reverse side (default 0)')
 @click.option('--output_proteindb', default="peptide-database.fa", help="Output file name, exits if already exists")
 @click.option('--skip_including_all_cds',
-              help="By default any transcript that has a defined CDS will be used, this option disables this features instead it only depends on the biotypes",
+              help="By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes",
               is_flag=True)
 @click.option('--include_biotypes', default='', help="Include Biotypes")
 @click.option('--exclude_biotypes', default='', help="Exclude Biotypes")
