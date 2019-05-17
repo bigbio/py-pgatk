@@ -343,10 +343,10 @@ class EnsemblDataService(ParameterConfiguration):
 
                 key_values = {}  # extract key=value in the desc into a dict
                 for value in desc.split(' '):
-                    try:
+                    if '=' in value:
                         key_values[value.split('=')[0]] = value.split('=')[1]
-                    except IndexError:
-                        continue
+                    elif ':' in value:
+                        key_values[value.split(':')[0]] = value.split(':')[1]
 
                 feature_biotype = ""
                 if self._biotype_str:
