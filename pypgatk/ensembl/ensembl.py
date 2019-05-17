@@ -33,7 +33,6 @@ class EnsemblDataService(ParameterConfiguration):
     EXPRESSION_THRESH = "expression_thresh"
     IGNORE_FILTERS = "ignore_filters"
     ACCEPTED_FILTERS = "accepted_filters"
-    
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -147,19 +146,17 @@ class EnsemblDataService(ParameterConfiguration):
             self.IGNORE_FILTERS]
         if self.IGNORE_FILTERS in self.get_pipeline_parameters():
             self._ignore_filters = self.get_pipeline_parameters()[self.IGNORE_FILTERS]
-            
+
         self._accepted_filters = self.get_multiple_options(
             self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.ACCEPTED_FILTERS])
         if self.ACCEPTED_FILTERS in self.get_pipeline_parameters():
             self._accepted_filters = self.get_multiple_options(
                 self.get_pipeline_parameters()[self.ACCEPTED_FILTERS])
-            
-            
+
     def three_frame_translation(self, input_fasta):
         """
         This function translate a transcriptome into a 3'frame translation protein sequence database
         :param input_fasta: fasta input file
-        :param output_file: output file
         :return:
         """
 
@@ -301,7 +298,7 @@ class EnsemblDataService(ParameterConfiguration):
         Translate the coding_ref and the coding_alt into ORFs
         :param ref_seq:
         :param alt_seq:
-        :param trans_table:
+        :param translation_table:
         :param num_orfs:
         :return:
         """
@@ -320,11 +317,11 @@ class EnsemblDataService(ParameterConfiguration):
 
         ref_orfs = []
         for n in range(0, num_orfs):
-            ref_orfs.append(ref_seq[n::].translate(translation_table, to_stop = to_stop))
+            ref_orfs.append(ref_seq[n::].translate(translation_table, to_stop=to_stop))
 
         rev_ref_seq = ref_seq.reverse_complement()
         for n in range(0, num_orfs_complement):
-            ref_orfs.append(rev_ref_seq[n::].translate(translation_table, to_stop = to_stop))
+            ref_orfs.append(rev_ref_seq[n::].translate(translation_table, to_stop=to_stop))
 
         return ref_orfs
 
@@ -360,10 +357,13 @@ class EnsemblDataService(ParameterConfiguration):
                             self._biotype_str, record_id, desc))
 
                 # only include features that have the specified biotypes or they have CDSs info
-                if 'CDS' in key_values.keys() and (not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
+                if 'CDS' in key_values.keys() and (
+                        not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
                     pass
                 elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
-                                               ( feature_biotype not in self._include_biotypes and self._include_biotypes != ['all'])):
+                                               (
+                                                       feature_biotype not in self._include_biotypes and self._include_biotypes != [
+                                                   'all'])):
                     continue
 
                 # check wether to filter on expression and if it passes
@@ -382,11 +382,11 @@ class EnsemblDataService(ParameterConfiguration):
                                                                                                           self._expression_str]))
                         continue
 
-                #translate the whole sequences (3 ORFs) for non CDS sequences and not take alt_ORFs for CDSs
-                if 'CDS' not in key_values.keys() or ('CDS' in key_values.keys() and 
+                # translate the whole sequences (3 ORFs) for non CDS sequences and not take alt_ORFs for CDSs
+                if 'CDS' not in key_values.keys() or ('CDS' in key_values.keys() and
                                                       ('altORFs' in self._include_biotypes or
-                                                   self._include_biotypes==['all'])):
-                    ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, self._num_orfs, 
+                                                       self._include_biotypes == ['all'])):
+                    ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, self._num_orfs,
                                                  self._num_orfs_complement, to_stop=False)
 
                     self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
@@ -409,8 +409,8 @@ class EnsemblDataService(ParameterConfiguration):
         It only considers variants within potential coding regions of the transcript
         (CDSs & stop codons for protein-coding genes, exons for non-protein coding genes).
         :param vcf_file:
-        :param genome_fasta:
-        :param gtf_fasta:
+        :param input_fasta:
+        :param gene_annotations_gtf:
         :return:
         """
 
@@ -423,9 +423,9 @@ class EnsemblDataService(ParameterConfiguration):
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             for record in vcf_reader:
-                
-                if not self._ignore_filters: 
-                    if record.FILTER: #if not PASS: None and empty means PASS
+
+                if not self._ignore_filters:
+                    if record.FILTER:  # if not PASS: None and empty means PASS
                         if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
                             continue
 
@@ -514,9 +514,10 @@ class EnsemblDataService(ParameterConfiguration):
                         continue
 
                     for alt in record.ALT:  # in cases of multiple alternative alleles consider all
-                        if transcript_id + str(record.REF) + str(alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
+                        if transcript_id + str(record.REF) + str(
+                                alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
                             continue
-                        
+
                         processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
                         "for non-CDSs, only consider the exon that actually overlaps the variant"
                         if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
@@ -545,7 +546,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                       prots_fn=prots_fn)
 
         return self._proteindb_output
-    
+
     def write_output(self, seq_id, desc, seqs, prots_fn):
         """write the orfs to the output file"""
         write_i = False

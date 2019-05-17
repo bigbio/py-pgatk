@@ -266,7 +266,6 @@ def threeframe_translation(ctx, config_file, input_fasta, translation_table, out
               help="enabling this option causes or variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER column is PASS, None, .) or if the filters are subset of the accepted filters. (default is False)",
               is_flag=True)
 @click.option('--accepted_filters', default='', help="Accepted filters for variant parsing")
-
 @click.pass_context
 def vcf_to_proteindb(ctx, config_file, input_fasta, vep_annotated_vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
@@ -323,9 +322,9 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vep_annotated_vcf, gene_anno
               help='Threshold used to filter transcripts based on their expression values')
 @click.pass_context
 def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_orfs, num_orfs_complement,
-                     output_proteindb,
-                     skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, expression_str,
-                     expression_thresh):
+                        output_proteindb,
+                        skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, expression_str,
+                        expression_thresh):
     if input_fasta is None:
         print_help()
 
