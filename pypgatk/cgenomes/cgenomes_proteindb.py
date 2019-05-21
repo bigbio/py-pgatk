@@ -11,7 +11,9 @@ class CancerGenomesService(ParameterConfiguration):
     CONFIG_COMPLETE_GENES_FILE = "genes_file"
     CONFIG_OUTPUT_FILE = "output_file"
     CONFIG_COSMIC_DATA = "cosmic_data"
-
+    CONFIG_COSMIC_TISSUE_TYPE = "tissue_type"
+    CONFIG_COSMIC_SPLIT_BY_TISSUE = "split_by_tissue_type"
+    
     def __init__(self, config_file, pipeline_arguments):
         """
         Init the class with the specific parameters.
@@ -28,7 +30,13 @@ class CancerGenomesService(ParameterConfiguration):
 
         if self.CONFIG_OUTPUT_FILE in self.get_pipeline_parameters():
             self._local_output_file = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_FILE]
-
+        
+        if self.CONFIG_COSMIC_TISSUE_TYPE in self.get_pipeline_parameters():
+            self._tissue_type = self.get_pipeline_parameters()[self.CONFIG_COSMIC_TISSUE_TYPE]
+    
+        if self.CONFIG_COSMIC_SPLIT_BY_TISSUE in self.get_pipeline_parameters():
+            self._split_by_tissue_type = self.get_pipeline_parameters()[self.CONFIG_COSMIC_SPLIT_BY_TISSUE]
+            
     def cosmic_to_proteindb(self):
         """
         This function translate the mutation file + COSMIC genes into a protein Fasta database. The
@@ -47,10 +55,12 @@ class CancerGenomesService(ParameterConfiguration):
         cds_col = header.index("Mutation CDS")
         aa_col = header.index("Mutation AA")
         muttype_col = header.index("Mutation Description")
-
+        tissue_col = header.index('Primary site')
+        
         output = open(self._local_output_file, 'w')
 
         mutation_dic = {}
+        tissue_mutations_dict = {}
         nucleotide = ["A", "T", "C", "G"]
         self.get_logger().debug("Reading input CosmicMutantExport.tsv ...")
         line_counter = 1
@@ -60,6 +70,10 @@ class CancerGenomesService(ParameterConfiguration):
                 self.get_logger().debug(msg)
             line_counter += 1
             row = line.strip().split("\t")
+            #filter out mutations from unspecified tissues
+            if row[tissue_col] not in self._tissue_type and self._tissue_type!='all':
+                continue
+            
             if "coding silent" in row[muttype_col]:
                 continue
 
@@ -171,7 +185,18 @@ class CancerGenomesService(ParameterConfiguration):
                 if header not in mutation_dic:
                     output.write(entry)
                     mutation_dic[header] = 1
-
+                
+                if self._split_by_tissue_type:
+                    try:
+                        tissue_mutations_dict[row[tissue_col]][header] = entry
+                    except KeyError:
+                        tissue_mutations_dict[row[tissue_col]] = {header: entry}
+                
+        for tissue_type in tissue_mutations_dict.keys():
+            with open(self._local_output_file+ '_' + tissue_type, 'w') as fn:
+                for header in tissue_mutations_dict[tissue_type].keys():
+                    fn.write(tissue_mutations_dict[tissue_type][header])
+            
         self.get_logger().debug("COSMIC contains in total", len(mutation_dic), "non redundant mutations")
         cosmic_input.close()
         output.close()

@@ -1,5 +1,7 @@
 cosmic_data:
   output_directory: database_cosmic
+  tissue_type: "all"
+  split_by_tissue_type: True
   cosmic_server:
     cosmic_ftp: https://cancer.sanger.ac.uk
     mutations_url: cosmic/file_download/GRCh38/cosmic/v88
