@@ -11,8 +11,11 @@ class CancerGenomesService(ParameterConfiguration):
     CONFIG_COMPLETE_GENES_FILE = "genes_file"
     CONFIG_OUTPUT_FILE = "output_file"
     CONFIG_COSMIC_DATA = "cosmic_data"
-    CONFIG_COSMIC_TISSUE_TYPE = "tissue_type"
-    CONFIG_COSMIC_SPLIT_BY_TISSUE = "split_by_tissue_type"
+    CONFIG_KEY_DATA = 'proteindb'
+    CONFIG_TISSUE_INFO = 'tissue_info'
+    TISSUE_TYPE = "tissue_type"
+    SPLIT_BY_TISSUE_TYPE = "split_by_tissue_type"
+    CLINICAL_SAMPLE_FILE = 'clinical_sample_file'
     
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -31,12 +34,28 @@ class CancerGenomesService(ParameterConfiguration):
         if self.CONFIG_OUTPUT_FILE in self.get_pipeline_parameters():
             self._local_output_file = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_FILE]
         
-        if self.CONFIG_COSMIC_TISSUE_TYPE in self.get_pipeline_parameters():
-            self._tissue_type = self.get_pipeline_parameters()[self.CONFIG_COSMIC_TISSUE_TYPE]
+        self._tissue_type = self.get_multiple_options(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TISSUE_INFO][self.TISSUE_TYPE])
+        if self.TISSUE_TYPE in self.get_pipeline_parameters():
+            self._tissue_type = self.get_multiple_options(self.get_pipeline_parameters()[self.TISSUE_TYPE])
+
+        self._split_by_tissue_type = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TISSUE_INFO][self.SPLIT_BY_TISSUE_TYPE]
+        if self.SPLIT_BY_TISSUE_TYPE in self.get_pipeline_parameters():
+            self._split_by_tissue_type = self.get_pipeline_parameters()[self.SPLIT_BY_TISSUE_TYPE]
+        
+        self._local_clinical_sample_file = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TISSUE_INFO][self.CLINICAL_SAMPLE_FILE]
+        if self.CLINICAL_SAMPLE_FILE in self.get_pipeline_parameters():
+            self._local_clinical_sample_file = self.get_pipeline_parameters()[self.CLINICAL_SAMPLE_FILE]
     
-        if self.CONFIG_COSMIC_SPLIT_BY_TISSUE in self.get_pipeline_parameters():
-            self._split_by_tissue_type = self.get_pipeline_parameters()[self.CONFIG_COSMIC_SPLIT_BY_TISSUE]
-            
+    @staticmethod
+    def get_multiple_options(options_str: str):
+        """
+        This method takes an String like option1, option2, ... and produce and array [option1, option2,... ]
+        :param options_str:
+        :return: Array
+        """
+        return list(map(lambda x: x.strip(), options_str.split(",")))
+
     def cosmic_to_proteindb(self):
         """
         This function translate the mutation file + COSMIC genes into a protein Fasta database. The
@@ -71,7 +90,7 @@ class CancerGenomesService(ParameterConfiguration):
             line_counter += 1
             row = line.strip().split("\t")
             #filter out mutations from unspecified tissues
-            if row[tissue_col] not in self._tissue_type and self._tissue_type!='all':
+            if row[tissue_col] not in self._tissue_type and self._tissue_type!=['all']:
                 continue
             
             if "coding silent" in row[muttype_col]:
@@ -191,37 +210,59 @@ class CancerGenomesService(ParameterConfiguration):
                         tissue_mutations_dict[row[tissue_col]][header] = entry
                     except KeyError:
                         tissue_mutations_dict[row[tissue_col]] = {header: entry}
-                
+            
         for tissue_type in tissue_mutations_dict.keys():
-            with open(self._local_output_file+ '_' + tissue_type, 'w') as fn:
+            with open(self._local_output_file.replace('.fa', '')+ '_' + tissue_type.replace(' ','_')+'.fa', 'w') as fn:
                 for header in tissue_mutations_dict[tissue_type].keys():
                     fn.write(tissue_mutations_dict[tissue_type][header])
             
-        self.get_logger().debug("COSMIC contains in total", len(mutation_dic), "non redundant mutations")
+        self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
         cosmic_input.close()
         output.close()
-
+        
+    @staticmethod
+    def get_tissue_type_per_sample(local_clinical_sample_file):
+        sample_tissue_type = {}
+        if local_clinical_sample_file:
+            with open(local_clinical_sample_file, 'r') as clin_fn:
+                header_line = clin_fn.readline().strip().split('\t')
+                try:
+                    tissue_type_col = header_line.index('Cancer Type')
+                except ValueError:
+                    print('Cancer Type was not found in the header row:', header_line, ' in clinical sample file:', local_clinical_sample_file)
+                    return {}
+                try:
+                    sample_id_col = header_line.index('Sample Identifier')
+                except ValueError:
+                    print('Sample Identifier was not found in the header row:', header_line, ' in clinical sample file:', local_clinical_sample_file)
+                    return {}
+                for line in clin_fn.readlines():
+                    sl = line.strip().split('\t')
+                    sample_tissue_type[sl[sample_id_col]] = sl[tissue_type_col].strip().replace(' ','_')
+        return sample_tissue_type
+    
     def cbioportal_to_proteindb(self):
-
+        """cBioportal studies have a data_clinical_sample.txt file that shows the Primary Tumor Site per Sample Identifie
+        it matches the the Tumor_Sample_Barcode column in the mutations file.
+        """
         mutfile = open(self._local_mutation_file, "r")
         fafile = SeqIO.parse(self._local_complete_genes, "fasta")
         output = open(self._local_output_file, "w")
-
+        sample_tissue_type_dict = {}
+        tissue_mutations_dict = {}
+        
         seq_dic = {}
         for record in fafile:
             newacc = record.id.split(".")[0]
             if newacc not in seq_dic:
                 seq_dic[newacc] = record.seq
-
-        print(len(seq_dic))
-
+        
         f1 = mutfile.readline()
         if f1[0] == "#":
             header = mutfile.readline().strip().split("\t")
         else:
             header = f1.strip().split("\t")
 
-        # print(header)
         pos_col = header.index("HGVSc")
         enst_col = header.index("Transcript_ID")
 
@@ -232,9 +273,40 @@ class CancerGenomesService(ParameterConfiguration):
         nucleotide = ["A", "T", "C", "G"]
         mutclass = ["Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation",
                     "Nonsense_Mutation"]
+        sample_id_col = None
 
+        #check if sample id and clinical files are given, if not and tissue type is required then exit
+        if self._tissue_type!=['all'] or self._split_by_tissue_type:
+            if self._local_clinical_sample_file:
+                sample_tissue_type_dict = self.get_tissue_type_per_sample(self._local_clinical_sample_file)
+                if sample_tissue_type_dict=={}:
+                    return
+            else:
+                print('No clinical sample file is given therefore no tissue type can be detected.')
+                return
+            
+            try:
+                sample_id_col = header.index('Tumor_Sample_Barcode')
+            except ValueError:
+                print("Tumor_Sample_Barcode was not found in the header {} of mutations file: {}".format(header, self._local_mutation_file))
+                return
+            
         for line in mutfile:
             row = line.strip().split("\t")
+            
+            #get tissue type and check it
+            tissue_type = None
+            if self._tissue_type!=['all'] or self._split_by_tissue_type:
+                try:
+                    tissue_type = sample_tissue_type_dict[row[sample_id_col]]
+                except KeyError:
+                    if self._tissue_type!=['all'] or self._split_by_tissue_type:
+                        print("No clinical info was found for sample {}. Skipping: {}".format(row[sample_id_col], line))
+                        continue
+                
+            if tissue_type not in self._tissue_type and self._tissue_type != ['all']:
+                continue
+            
             gene = row[0]
             try:
                 pos = row[pos_col]
@@ -312,7 +384,19 @@ class CancerGenomesService(ParameterConfiguration):
             if len(mut_pro_seq) > 6:
                 header = "Mutation:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
                 output.write(">%s\n%s\n" % (header, mut_pro_seq))
-
+                
+                if self._split_by_tissue_type:
+                    try:
+                        tissue_mutations_dict[tissue_type][header] = mut_pro_seq
+                    except KeyError:
+                        tissue_mutations_dict[tissue_type] = {header: mut_pro_seq}
+                     
         output.close()
         mutfile.close()
         fafile.close()
+        
+        for tissue_type in tissue_mutations_dict.keys():
+            with open(self._local_output_file.replace('.fa', '')+ '_' + tissue_type.replace(' ','_')+'.fa', 'w') as fn:
+                for header in tissue_mutations_dict[tissue_type].keys():
+                    fn.write(">{}\n{}\n".format(header, tissue_mutations_dict[tissue_type][header]))
+         

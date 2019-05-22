@@ -1,7 +1,5 @@
 cosmic_data:
   output_directory: database_cosmic
-  tissue_type: "all"
-  split_by_tissue_type: True
   cosmic_server:
     cosmic_ftp: https://cancer.sanger.ac.uk
     mutations_url: cosmic/file_download/GRCh38/cosmic/v88
@@ -14,3 +12,8 @@ cosmic_data:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
       INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
     loglevel: DEBUG
+proteindb:
+   tissue_info:
+      tissue_type: 'all'
+      split_by_tissue_type: False
+      clinical_sample_file: ''
