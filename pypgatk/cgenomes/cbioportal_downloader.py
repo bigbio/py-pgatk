@@ -24,13 +24,17 @@ class CbioPortalDownloadService(ParameterConfiguration):
         super(CbioPortalDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                         pipeline_arguments)
 
-        self.cbioportal_studies = []
+        self._cbioportal_studies = []
         if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
             self._local_path_cbioportal = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
         else:
             self._local_path_cbioportal = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                 self.CONFIG_OUTPUT_DIRECTORY]
-
+        
+        self._list_studies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_LIST_STUDIES]
+        if self.CONFIG_LIST_STUDIES in self.get_pipeline_parameters():
+            self._list_studies = self.get_pipeline_parameters()[self.CONFIG_LIST_STUDIES]
+        
         self.prepare_local_cbioportal_repository()
 
     def prepare_local_cbioportal_repository(self):
@@ -57,13 +61,13 @@ class CbioPortalDownloadService(ParameterConfiguration):
 
     def download_study(self, download_study):
         """
-        This function will download an study from cBioPortal using the study ID
+        This function will download a study from cBioPortal using the study ID
         :param download_study: Study to be download, if the study is empty or None, all the studies will be
-        download.
+        downloaded.
         :return: None
         """
 
-        if self._cbioportal_studies is None or len(self._cbioportal_studies):
+        if self._cbioportal_studies is None or len(self._cbioportal_studies)==0:
             self.get_cancer_studies()
 
         if 'all' not in download_study:

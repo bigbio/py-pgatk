@@ -119,12 +119,12 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
     pipeline_arguments = {}
     if output_directory is not None:
         pipeline_arguments[CbioPortalDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
-    if list_studies is not None:
+    if list_studies:
         pipeline_arguments[CbioPortalDownloadService.CONFIG_LIST_STUDIES] = list_studies
 
     cbioportal_downloader_service = CbioPortalDownloadService(config_file, pipeline_arguments)
 
-    if list_studies is not None:
+    if list_studies:
         list_studies = cbioportal_downloader_service.get_cancer_studies()
         print(list_studies)
 

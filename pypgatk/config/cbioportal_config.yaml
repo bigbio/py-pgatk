@@ -1,5 +1,6 @@
 cbioportal_data_downloader:
   output_directory: database_cbioportal
+  list_studies: False
   cbioportal_api:
     base_url: https://www.cbioportal.org/webservice.do
     cancer_studies: cmd=getCancerStudies
