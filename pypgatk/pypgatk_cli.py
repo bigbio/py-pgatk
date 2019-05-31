@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 This is the main tool that give access to all commands and options provided by the py-pgatk
 
