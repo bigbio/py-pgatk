@@ -31,9 +31,8 @@ class CosmicDownloadService(ParameterConfiguration):
             self._local_path_cosmic = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                 self.CONFIG_OUTPUT_DIRECTORY]
 
-        self._cosmic_token = base64.b64encode(
-            f'{self.get_pipeline_parameters()[self.CONFIG_COSMIC_FTP_USER]}:{self.get_pipeline_parameters()[self.CONFIG_COSMIC_FTP_PASSWORD]}'.encode()).decode(
-            'utf-8')
+        self._cosmic_token = base64.b64encode("{}:{}".format(self.get_pipeline_parameters()[self.CONFIG_COSMIC_FTP_USER], self.get_pipeline_parameters()[self.CONFIG_COSMIC_FTP_PASSWORD])
+                                              .encode()).decode('utf-8')
 
         self.prepare_local_cosmic_repository()
 
