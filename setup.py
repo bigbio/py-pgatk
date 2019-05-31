@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='pypgatk',
       version='0.0.1',
@@ -7,5 +7,5 @@ setup(name='pypgatk',
       author='PgAtk Team',
       author_email='ypriverol@gmail.com',
       license='Apache 2',
-      packages=['pypgatk'],
+      packages=find_packages(),
       zip_safe=False)
