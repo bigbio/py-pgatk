@@ -275,7 +275,7 @@ class CancerGenomesService(ParameterConfiguration):
                     "Nonsense_Mutation"]
         sample_id_col = None
 
-        #check if sample id and clinical files are given, if not and tissue type is required then exit
+        # check if sample id and clinical files are given, if not and tissue type is required then exit
         if self._tissue_type!=['all'] or self._split_by_tissue_type:
             if self._local_clinical_sample_file:
                 sample_tissue_type_dict = self.get_tissue_type_per_sample(self._local_clinical_sample_file)
