@@ -3,11 +3,11 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.7"
 cache: pip
 install:
   - pip install -r requirements.txt
 
 script:
   - python setup.py install
-  - python pypgatk/tests/pypgatk_tests.py
+  - cd pypgatk
+  - python tests/pypgatk_tests.py
