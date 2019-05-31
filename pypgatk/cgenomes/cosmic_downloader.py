@@ -52,8 +52,8 @@ class CosmicDownloadService(ParameterConfiguration):
         :return: None
         """
 
-        mutation_output_file = f'{self.get_local_path_root_cosmic_repo()}/{self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_MUTATIONS_FILE]}'
-        cds_genes_output_file = f'{self.get_local_path_root_cosmic_repo()}/{self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CDS_GENES_FILE]}'
+        mutation_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_MUTATIONS_FILE])
+        cds_genes_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CDS_GENES_FILE])
 
         server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_FTP_URL]
@@ -65,10 +65,10 @@ class CosmicDownloadService(ParameterConfiguration):
         all_cds_gene_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_CDS_GENES_FILE]
 
-        mutation_url = f'{server}/{cosmic_version}/{mutation_file}'
-        cds_gene_url = f'{server}/{cosmic_version}/{all_cds_gene_file}'
+        mutation_url = "{}/{}/{}".format(server, cosmic_version, mutation_file)
+        cds_gene_url = "{}/{}/{}".format(server, cosmic_version, all_cds_gene_file)
 
-        token = f'Basic {self._cosmic_token}'
+        token = "Basic {}".format(self._cosmic_token)
         self.download_file_cosmic(mutation_url, mutation_output_file, token)
         self.download_file_cosmic(cds_gene_url, cds_genes_output_file, token)
 
