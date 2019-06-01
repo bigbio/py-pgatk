@@ -17,8 +17,7 @@ RUN cd /tool/source/ && pip3 install -r requirements.txt && python3 setup.py ins
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
-
+ENV PATH=$PATH:/tool/source/pypgatk/
+RUN chmod +x pypgatk_cli.py
 
 USER biodocker
-
-CMD [ "python3", "/tool/source/pypgatk/pypgatk_cli.py"]
