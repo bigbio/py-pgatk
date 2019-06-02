@@ -54,11 +54,12 @@ def cli():
 @click.option('--skip_gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
 @click.option('--skip_protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
 @click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
+@click.option('--skip_cdna', '-sd', help='Skip the cDNA file download', is_flag=True)
 @click.option('--skip_ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
 @click.option('--skip_vcf', '-vcf', help='Skip the VCF variant file', is_flag=True)
 @click.pass_context
 def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release, taxonomy, skip_gtf,
-                       skip_protein, skip_cds, skip_ncrna, skip_vcf):
+                       skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     if config_file is None:
@@ -86,11 +87,14 @@ def ensembl_downloader(ctx, config_file, output_directory, folder_prefix_release
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDS] = True
     else:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDS] = False
-
     if skip_ncrna is not None and skip_ncrna:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_NCRNA] = True
     else:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_NCRNA] = False
+    if skip_cdna is not None and skip_cdna:
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDNA] = True
+    else:
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDNA] = False
 
     ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
 

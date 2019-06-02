@@ -42,6 +42,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     CONFIG_KEY_SKIP_PROTEIN = 'skip_protein'
     CONFIG_KEY_SKIP_GTF = 'skip_gtf'
     CONFIG_KEY_SKIP_CDS = 'skip_cds'
+    CONFIG_KEY_SKIP_CDNA = 'skip_cdna'
     CONFIG_KEY_SKIP_NCRNA = 'skip_ncrna'
 
     def __init__(self, config_file, pipeline_arguments):
@@ -107,6 +108,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
                     cds_files = self.get_cds_files(species)
                     files.extend(cds_files)
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
+                    cdna_files = self.get_cdna_files(species)
+                    files.extend(cdna_files)
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
                     ncrna_files = self.get_ncrna_files(species)
                     files.extend(ncrna_files)
@@ -127,6 +131,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
                             cds_files = self.get_cds_files(species)
                             files.extend(cds_files)
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
+                            cdna_files = self.get_cdna_files(species)
+                            files.extend(cdna_files)
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
                             ncrna_files = self.get_ncrna_files(species)
                             files.extend(ncrna_files)
@@ -146,6 +153,25 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.cds.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
             file_url = '{}/release-{}/fasta/{}/cds/{}'.format(
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                    self.CONFIG_KEY_BASE_URL],
+                species['release'], species['name'], file_name)
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
+        except KeyError:
+            print("No valid info is available species: ", species)
+
+        return files
+
+    def get_cdna_files(self, species: dict) -> list:
+        """
+        Get the cds files for an specific species object.
+        :return: List of files names.
+        """
+        files = []
+        try:
+            file_name = '{}.{}.cdna.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
+                                                     species['assembly'])
+            file_url = '{}/release-{}/fasta/{}/cdna/{}'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
@@ -214,3 +240,4 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             self.get_logger().debug("No valid info is available species: ", species)
 
         return files
+
