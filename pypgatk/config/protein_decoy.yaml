@@ -1,0 +1,12 @@
+proteindb_decoy:
+  output: protein-decoy.fa
+  cleavage_sites: KR
+  cleavage_position: c
+  min_peptide_length: 5
+  max_iterations: 100
+  do_not_shuffle: False
+  do_not_switch: False
+  decoy_prefix: DECOY_
+  temp_file: tmp.fa
+  no_isobaric: False
+  memory_save: False
