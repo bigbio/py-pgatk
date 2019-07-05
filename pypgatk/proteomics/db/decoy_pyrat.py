@@ -203,28 +203,30 @@ class ProteinDBService(ParameterConfiguration):
         outfa = open(self._temp_file, 'w')
 
         # Open FASTA file using first cmd line argument
-        fasta = SeqIO.parse(args.fasta, 'fasta')
+        fasta = SeqIO.parse(self._input_fasta, 'fasta')
         # loop each seq in the file
         for record in fasta:
                 seq = str(record.seq)
                 dcount+=1	
                 #make sequence isobaric (check args for switch off)
-                if args.iso == False:
+                if self._isobaric == False:
                         seq = seq.replace('I', 'L')
 
                 #digest sequence add peptides to set
-                upeps.update( digest(seq, args.csites, args.cpos, args.noc, args.minlen) )
+                upeps.update(ProteinDBService.digest(seq, self._cleavage_sites, self._cleavage_position,
+                                                         self._anti_cleavage_sites, self._peptide_length))
 
                 #reverse and switch protein sequence
-                decoyseq = revswitch(seq, args.noswitch, args.csites)
+                decoyseq = ProteinDBService.revswitch(seq, self._no_switch, self._cleavage_sites)
 
                 #do not store decoy peptide set in reduced memory mode
-                if args.mem == False:
+                if self._memory_save == False:
                         #update decoy peptide set
-                        dpeps.update( digest(decoyseq, args.csites, args.cpos, args.noc, args.minlen) )
+                        dpeps.update( ProteinDBService.digest(decoyseq, self._cleavage_sites, self._cleavage_position,
+                                                             self._anti_cleavage_sites, self._peptide_length))
 
                 #write decoy protein accession and sequence to file
-                outfa.write('>' + args.dprefix + '_' + record.id + '\n')
+                outfa.write('>' + self._decoy_prefix + '_' + record.id + '\n')
                 outfa.write(decoyseq + '\n')
 
         # Close files
@@ -268,7 +270,7 @@ class ProteinDBService(ParameterConfiguration):
 
             # loop bad decoys / dictionary keys
             for dPep in dAlternative:
-                i = 0;
+                i = 0
                 aPep = dPep
 
                 # shuffle until aPep is not in target set (maximum of 10 iterations)
