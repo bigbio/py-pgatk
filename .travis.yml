@@ -6,12 +6,13 @@ python:
 cache: pip
 install:
   - pip install codecov
+  - pip install pytest-cov pytest
   - pip install -r requirements.txt
 
 script:
   - python setup.py install
-  - cd pypgatk
-  - python tests/pypgatk_tests.py
+  - python pypgatk/tests/pypgatk_tests.py
+  - py.test  --cov-report term --cov=pypgatk/tests/
 
 after_success:
   - codecov
