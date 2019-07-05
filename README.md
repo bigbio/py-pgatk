@@ -1,5 +1,7 @@
 # Python tools for ProteoGenomics Analysis Toolkit
 
+[![Build Status](https://travis-ci.org/bigbio/py-pgatk.svg?branch=master)](https://travis-ci.org/bigbio/py-pgatk)
+
 
 **pypgatk** is a Python framework for part of the ProteoGenomics Analysis Toolkit. It provides different tools for proteogenomics data analysis such as:
 
