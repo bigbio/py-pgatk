@@ -26,6 +26,7 @@
 
 import random
 import os
+from Bio import SeqIO
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
@@ -202,40 +203,29 @@ class ProteinDBService(ParameterConfiguration):
         outfa = open(self._temp_file, 'w')
 
         # Open FASTA file using first cmd line argument
-        fasta = open(self._input_fasta, 'r')
-        # loop each line in the file
-        for line in fasta:
-            # if this line starts with ">" then process sequence if not empty
-            if line[0] == '>':
-                if seq != '':
-
-                    # make sequence isobaric (check args for switch off)
-                    if self._isobaric == False:
+        fasta = SeqIO.parse(args.fasta, 'fasta')
+        # loop each seq in the file
+        for record in fasta:
+                seq = str(record.seq)
+                dcount+=1	
+                #make sequence isobaric (check args for switch off)
+                if args.iso == False:
                         seq = seq.replace('I', 'L')
 
-                    # digest sequence add peptides to set
-                    upeps.update(ProteinDBService.digest(seq, self._cleavage_sites, self._cleavage_position,
-                                                         self._anti_cleavage_sites, self._peptide_length))
+                #digest sequence add peptides to set
+                upeps.update( digest(seq, args.csites, args.cpos, args.noc, args.minlen) )
 
-                    # reverse and switch protein sequence
-                    decoyseq = ProteinDBService.revswitch(seq, self._no_switch, self._cleavage_sites)
+                #reverse and switch protein sequence
+                decoyseq = revswitch(seq, args.noswitch, args.csites)
 
-                    # do not store decoy peptide set in reduced memory mode
-                    if self._memory_save == False:
-                        # update decoy peptide set
-                        dpeps.update(ProteinDBService.digest(decoyseq, self._cleavage_sites, self._cleavage_position,
-                                                             self._anti_cleavage_sites, self._peptide_length))
+                #do not store decoy peptide set in reduced memory mode
+                if args.mem == False:
+                        #update decoy peptide set
+                        dpeps.update( digest(decoyseq, args.csites, args.cpos, args.noc, args.minlen) )
 
-                    # write decoy protein accession and sequence to file
-                    dcount += 1
-                    outfa.write('>' + self._decoy_prefix + str(dcount) + '\n')
-                    outfa.write(decoyseq + '\n')
-
-                seq = ''
-
-            # if not accession line then append aa sequence (with no newline or white space) to seq string
-            else:
-                seq += line.rstrip()
+                #write decoy protein accession and sequence to file
+                outfa.write('>' + args.dprefix + '_' + record.id + '\n')
+                outfa.write(decoyseq + '\n')
 
         # Close files
         fasta.close()
