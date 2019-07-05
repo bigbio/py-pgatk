@@ -6,7 +6,7 @@ from pypgatk.proteomics.db.decoy_pyrat import ProteinDBService
 from pypgatk.toolbox.exceptions import AppConfigException
 
 
-@click.command('proteindb-decoy', short_help='Create decoy protein sequences. Each protein '
+@click.command('generate-decoy', short_help='Create decoy protein sequences. Each protein '
                                              'is reversed and the cleavage sites switched with preceding amino acid. Peptides are checked for existence in target sequences if found'
                                              'the tool will attempt to shuffle them. James.Wright@sanger.ac.uk 2015')
 @click.option('--config_file', '-c', help='Configuration file for the protein database decoy generation',
@@ -38,7 +38,7 @@ from pypgatk.toolbox.exceptions import AppConfigException
 @click.option('--memory_save', '-m', dest='mem', default=False, action='store_true',
                     help='Slower but uses less memory (does not store decoy peptide list). Default=false')
 @click.pass_context
-def decoy_database(ctx, config_file, output, input, cleavage_sites, anti_cleavages_sites, cleavage_position, min_peptide_length,
+def generate_database(ctx, config_file, output, input, cleavage_sites, anti_cleavages_sites, cleavage_position, min_peptide_length,
                    max_interactions, do_not_shuffle, do_not_switch, decoy_prefix, temp_file, no_isobaric, memory_save):
 
     if config_file is None:
@@ -47,16 +47,45 @@ def decoy_database(ctx, config_file, output, input, cleavage_sites, anti_cleavag
         raise AppConfigException(msg)
 
     pipeline_arguments = {}
+
     if output is not None:
-        pipeline_arguments[ProteinDBService.CONFIG_OUTPUT_DIRECTORY] = output
+        pipeline_arguments[ProteinDBService.CONFIG_PROTEINDB_OUTPUT] = output
+
     if input is not None:
-        pipeline_arguments[ProteinDBService.INPUT_FILE] = input
+        pipeline_arguments[ProteinDBService.CONFIG_INPUT_FILE] = input
 
-    cbioportal_downloader_service = CbioPortalDownloadService(config_file, pipeline_arguments)
+    if cleavage_position is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_CLEAVAGE_SITES] = cleavage_sites
 
-    if list_studies:
-        list_studies = cbioportal_downloader_service.get_cancer_studies()
-        print(list_studies)
+    if cleavage_position is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_CLEAVAGE_POSITION] = cleavage_position
 
-    if download_study is not None:
-        cbioportal_downloader_service.download_study(download_study)
+    if anti_cleavages_sites is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_ANTI_CLEAVAGE_SITES] = anti_cleavages_sites
+
+    if min_peptide_length is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_PEPTIDE_LENGTH] = min_peptide_length
+
+    if max_interactions is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_MAX_ITERATIONS] = max_interactions
+
+    if do_not_shuffle is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_DO_NOT_SUFFLE] = do_not_shuffle
+
+    if do_not_switch is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_DO_NOT_SWITCH] = do_not_switch
+
+    if decoy_prefix is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_DECOY_PREFIX] = decoy_prefix
+
+    if temp_file is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_TEMP_FILE] = temp_file
+
+    if no_isobaric is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_NO_ISOBARIC] = no_isobaric
+
+    if memory_save is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_MEMORY_SAVE] = memory_save
+
+    proteindb_decoy = ProteinDBService(config_file, pipeline_arguments)
+    proteindb_decoy.decoy_database()

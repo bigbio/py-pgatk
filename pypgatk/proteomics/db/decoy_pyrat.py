@@ -24,12 +24,7 @@
 # SOFTWARE.
 #
 
-
-# used to get cmd line arguments
-import argparse
-# used to shuffle peptides
 import random
-# used to rename/delete tmp file
 import os
 
 from pypgatk.toolbox.general import ParameterConfiguration
@@ -42,11 +37,12 @@ class ProteinDBService(ParameterConfiguration):
     CONFIG_INPUT_FILE = 'input'
     CONFIG_CLEAVAGE_SITES = 'cleavage_sites'
     CONFIG_CLEAVAGE_POSITION = 'cleavage_position'
+    CONFIG_ANTI_CLEAVAGE_SITES = 'anti_cleavage_sites'
     CONFIG_PEPTIDE_LENGTH = 'peptide_length'
     CONFIG_MAX_ITERATIONS = 'max_iterations'
     CONFIG_DO_NOT_SUFFLE = 'do_not_shuffle'
     CONFIG_DO_NOT_SWITCH = 'do_not_switch'
-    CONFIG_DECOY_PREFIX  = 'decoy_prefix'
+    CONFIG_DECOY_PREFIX = 'decoy_prefix'
     CONFIG_TEMP_FILE = 'temp_file'
     CONFIG_NO_ISOBARIC = 'no_isobaric'
     CONFIG_MEMORY_SAVE = 'memory_save'
@@ -59,17 +55,78 @@ class ProteinDBService(ParameterConfiguration):
         """
 
         super(ProteinDBService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
-                                                    pipeline_arguments)
+                                               pipeline_arguments)
+
+        self._temp_file = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_TEMP_FILE]
+        if self.CONFIG_TEMP_FILE in self.get_pipeline_parameters():
+            self._temp_file = self.get_pipeline_parameters()[self.CONFIG_TEMP_FILE]
+
+        self._input_fasta = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_INPUT_FILE]
+        if self.CONFIG_INPUT_FILE in self.get_pipeline_parameters():
+            self._temp_file = self.get_pipeline_parameters()[self.CONFIG_INPUT_FILE]
+
+        self._isobaric = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_NO_ISOBARIC]
+        if self.CONFIG_NO_ISOBARIC in self.get_pipeline_parameters():
+            self._isobaric = self.get_pipeline_parameters()[self.CONFIG_NO_ISOBARIC]
+
+        self._memory_save = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_MEMORY_SAVE]
+        if self.CONFIG_MEMORY_SAVE in self.get_pipeline_parameters():
+            self._memory_save = self.get_pipeline_parameters()[self.CONFIG_MEMORY_SAVE]
+
+        self._cleavage_sites = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_CLEAVAGE_SITES]
+        if self.CONFIG_CLEAVAGE_SITES in self.get_pipeline_parameters():
+            self._cleavage_sites = self.get_pipeline_parameters()[self.CONFIG_CLEAVAGE_SITES]
+
+        self._decoy_prefix = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_DECOY_PREFIX]
+        if self.CONFIG_CLEAVAGE_SITES in self.get_pipeline_parameters():
+            self._decoy_prefix = self.get_pipeline_parameters()[self.CONFIG_DECOY_PREFIX]
+
+        self._cleavage_position = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_CLEAVAGE_POSITION]
+        if self.CONFIG_CLEAVAGE_POSITION in self.get_pipeline_parameters():
+            self._cleavage_position = self.get_pipeline_parameters()[self.CONFIG_CLEAVAGE_POSITION]
+
+        self._anti_cleavage_sites = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_ANTI_CLEAVAGE_SITES]
+        if self.CONFIG_ANTI_CLEAVAGE_SITES in self.get_pipeline_parameters():
+            self._anti_cleavage_sites = self.get_pipeline_parameters()[self.CONFIG_ANTI_CLEAVAGE_SITES]
+
+        self._peptide_length = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_PEPTIDE_LENGTH]
+        if self.CONFIG_PEPTIDE_LENGTH in self.get_pipeline_parameters():
+            self._peptide_length = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_LENGTH]
+
+        self._max_iterations = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_MAX_ITERATIONS]
+        if self.CONFIG_MAX_ITERATIONS in self.get_pipeline_parameters():
+            self._max_iterations = self.get_pipeline_parameters()[self.CONFIG_MAX_ITERATIONS]
+
+        self._no_switch = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_DO_NOT_SWITCH]
+        if self.CONFIG_DO_NOT_SWITCH in self.get_pipeline_parameters():
+            self._no_switch = self.get_pipeline_parameters()[self.CONFIG_DO_NOT_SWITCH]
+
+        self._output_file = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_PROTEINDB_OUTPUT]
+        if self.CONFIG_PROTEINDB_OUTPUT in self.get_pipeline_parameters():
+            self._output_file = self.get_pipeline_parameters()[self.CONFIG_PROTEINDB_OUTPUT]
+
+        self._no_suffle = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+            self.CONFIG_DO_NOT_SUFFLE]
+        if self.CONFIG_DO_NOT_SUFFLE in self.get_pipeline_parameters():
+            self._no_suffle = self.get_pipeline_parameters()[self.CONFIG_DO_NOT_SUFFLE]
 
     @staticmethod
-    def digest(protein, sites, pos, no, min):
+    def digest(protein, sites, pos, no, min_peptide_length):
         """
         Return a list of cleaved peptides with minimum length in protein sequence.
         :param protein = sequence
         :param sites = string of amino acid cleavage sites
         :param pos = n or c for n-terminal or c-terminal cleavage
         :param no = amino acids following site that would prevent cleavage ie proline
-        :param min = minimum length of peptides returned
+        :param min_peptide_length = minimum length of peptides returned
         """
 
         # for each possible cleavage site insert a comma with before or after depending on pos
@@ -89,7 +146,7 @@ class ProteinDBService(ParameterConfiguration):
                 protein = protein.replace(a, r)
 
         # filter peptides into list by minimum size
-        return list(filter(lambda x: len(x) >= min, (protein.split(','))))
+        return list(filter(lambda x: len(x) >= min_peptide_length, (protein.split(','))))
 
     @staticmethod
     def revswitch(protein, noswitch, sites):
@@ -99,7 +156,7 @@ class ProteinDBService(ParameterConfiguration):
         # reverse protein sequence with a reverse splice convert to list
         revseq = list(protein[::-1])
 
-        if noswitch == False:
+        if not noswitch:
 
             # loop sequence list
             for i, c in enumerate(revseq):
@@ -127,24 +184,27 @@ class ProteinDBService(ParameterConfiguration):
         # return new peptide
         return ''.join(l) + s
 
-
     def decoy_database(self):
+        """
+        Create a decoy database from a proteomics database
+        :return:
+        """
 
         # Create empty sets to add all target and decoy peptides
         upeps = set()
         dpeps = set()
 
         # Counter for number of decoy sequences
-        dcount = 0;
+        dcount = 0
 
         # empty protein sequence
         seq = ''
 
         # open temporary decoy FASTA file
-        outfa = open(args.tout, 'w')
+        outfa = open(self._temp_file, 'w')
 
         # Open FASTA file using first cmd line argument
-        fasta = open(args.fasta, 'r')
+        fasta = open(self._input_fasta, 'r')
         # loop each line in the file
         for line in fasta:
             # if this line starts with ">" then process sequence if not empty
@@ -152,26 +212,28 @@ class ProteinDBService(ParameterConfiguration):
                 if seq != '':
 
                     # make sequence isobaric (check args for switch off)
-                    if args.iso == False:
+                    if self._isobaric == False:
                         seq = seq.replace('I', 'L')
 
                     # digest sequence add peptides to set
-                    upeps.update(digest(seq, args.csites, args.cpos, args.noc, args.minlen))
+                    upeps.update(ProteinDBService.digest(seq, self._cleavage_sites, self._cleavage_position,
+                                                         self._anti_cleavage_sites, self._peptide_length))
 
                     # reverse and switch protein sequence
-                    decoyseq = revswitch(seq, args.noswitch, args.csites)
+                    decoyseq = ProteinDBService.revswitch(seq, self._no_switch, self._cleavage_sites)
 
                     # do not store decoy peptide set in reduced memory mode
-                    if args.mem == False:
+                    if self._memory_save == False:
                         # update decoy peptide set
-                        dpeps.update(digest(decoyseq, args.csites, args.cpos, args.noc, args.minlen))
+                        dpeps.update(ProteinDBService.digest(decoyseq, self._cleavage_sites, self._cleavage_position,
+                                                             self._anti_cleavage_sites, self._peptide_length))
 
                     # write decoy protein accession and sequence to file
                     dcount += 1
-                    outfa.write('>' + args.dprefix + '_' + str(dcount) + '\n')
+                    outfa.write('>' + self._decoy_prefix + str(dcount) + '\n')
                     outfa.write(decoyseq + '\n')
 
-                seq = '';
+                seq = ''
 
             # if not accession line then append aa sequence (with no newline or white space) to seq string
             else:
@@ -187,14 +249,15 @@ class ProteinDBService(ParameterConfiguration):
         print("target peptides:" + str(len(upeps)))
 
         # Reloop decoy file in reduced memory mode to store only intersecting decoys
-        if args.mem:
+        if self._memory_save:
             # open temp decoys
-            with open(args.tout, "rt") as fin:
+            with open(self._temp_file, "rt") as fin:
                 for line in fin:
                     # if line is not accession
                     if line[0] != '>':
                         # digest protein
-                        for p in digest(line.rstrip(), args.csites, args.cpos, args.noc, args.minlen):
+                        for p in ProteinDBService.digest(line.rstrip(), self._cleavage_sites, self._cleavage_position,
+                                                         self._anti_cleavage_sites, self._peptide_length):
                             # check if in target peptides if true then add to nonDecoys
                             if p in upeps:
                                 nonDecoys.add(p)
@@ -209,7 +272,7 @@ class ProteinDBService(ParameterConfiguration):
         print("#intersection:" + str(len(nonDecoys)))
 
         # if there are decoy peptides that are in the target peptide set
-        if len(nonDecoys) > 0 and args.noshuf == False:
+        if len(nonDecoys) > 0 and self._no_suffle == False:
 
             # create empty dictionary with bad decoys as keys
             dAlternative = dict.fromkeys(nonDecoys, '')
@@ -221,23 +284,23 @@ class ProteinDBService(ParameterConfiguration):
                 aPep = dPep
 
                 # shuffle until aPep is not in target set (maximum of 10 iterations)
-                while aPep in upeps and i < args.maxit:
+                while aPep in upeps and i < self._max_iterations:
 
                     # increment iteration counter
                     i += 1
 
                     # shuffle peptide
-                    aPep = shuffle(dPep)
+                    aPep = ProteinDBService.shuffle(dPep)
 
                     # check if shuffling has an effect if not end iterations
-                    if (aPep == dPep):
-                        i = args.maxit
+                    if aPep == dPep:
+                        i = self._max_iterations
 
                 # update dictionary with alternative shuffled peptide
                 dAlternative[dPep] = aPep
 
                 # warn if peptide has no suitable alternative, add to removal list
-                if i == args.maxit:
+                if i == self._max_iterations:
                     noAlternative.append(dPep)
 
             print(str(len(noAlternative)) + ' have no alternative peptide')
@@ -249,15 +312,17 @@ class ProteinDBService(ParameterConfiguration):
             upeps.clear()
             dpeps.clear()
             # open second decoy file
-            with open(args.dout, "wt") as fout:
+            with open(self._output_file, "wt") as fout:
                 # open original decoy file
-                with open(args.tout, "rt") as fin:
+                with open(self._temp_file, "rt") as fin:
                     # loop each line of original decoy fasta
                     for line in fin:
                         # if line is not accession replace peptides in dictionary with alternatives
                         if line[0] != '>':
                             # digest decoy sequence
-                            for p in digest(line.rstrip(), args.csites, args.cpos, args.noc, args.minlen):
+                            for p in ProteinDBService.digest(line.rstrip(), self._cleavage_sites,
+                                                             self._cleavage_position, self._anti_cleavage_sites,
+                                                             self._peptide_length):
                                 # store decoy peptide for final count
                                 dpeps.add(p)
 
@@ -270,15 +335,8 @@ class ProteinDBService(ParameterConfiguration):
             fout.close()
 
             # delete temporary file
-            os.remove(args.tout)
+            os.remove(self._temp_file)
         else:
-            os.rename(args.tout, args.dout)
+            os.rename(self._temp_file, self._output_file)
 
         print("final decoy peptides:" + str(len(dpeps)))
-
-
-
-
-
-
-

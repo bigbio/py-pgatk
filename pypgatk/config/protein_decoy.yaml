@@ -2,6 +2,7 @@ proteindb_decoy:
   output: protein-decoy.fa
   cleavage_sites: KR
   cleavage_position: c
+  anti_cleavage_sites:
   min_peptide_length: 5
   max_iterations: 100
   do_not_shuffle: False

@@ -16,9 +16,7 @@ from pypgatk.commands import cbioportal_to_proteindb as cbioportal_to_proteindb_
 from pypgatk.commands import threeframe_translation as threeframe_translation_cmd
 from pypgatk.commands import vcf_to_proteindb as vcf_to_proteindb_cmd
 from pypgatk.commands import dnaseq_to_proteindb as dnase_to_proteindb_cmd
-
-from pypgatk.ensembl.ensembl import EnsemblDataService
-
+from pypgatk.commands import proteindb_decoy as proteindb_decoy_cmd
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -36,6 +34,7 @@ cli.add_command(cbioportal_to_proteindb_cmd.cbioportal_to_proteindb)
 cli.add_command(threeframe_translation_cmd.threeframe_translation)
 cli.add_command(vcf_to_proteindb_cmd.vcf_to_proteindb)
 cli.add_command(dnase_to_proteindb_cmd.dnaseq_to_proteindb)
+cli.add_command(proteindb_decoy_cmd.generate_database)
 
 
 
