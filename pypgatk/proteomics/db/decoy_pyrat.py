@@ -226,7 +226,7 @@ class ProteinDBService(ParameterConfiguration):
                                                              self._anti_cleavage_sites, self._peptide_length))
 
                 #write decoy protein accession and sequence to file
-                outfa.write('>' + self._decoy_prefix + '_' + record.id + '\n')
+                outfa.write('>' + self._decoy_prefix + record.id + '\n')
                 outfa.write(decoyseq + '\n')
 
         # Close files
