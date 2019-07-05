@@ -2,7 +2,7 @@ proteindb_decoy:
   output: protein-decoy.fa
   cleavage_sites: KR
   cleavage_position: c
-  anti_cleavage_sites:
+  anti_cleavage_sites: ''
   min_peptide_length: 5
   max_iterations: 100
   do_not_shuffle: False
@@ -11,3 +11,8 @@ proteindb_decoy:
   temp_file: tmp.fa
   no_isobaric: False
   memory_save: False
+  logger:
+    formatters:
+      DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
+      INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
+    loglevel: DEBUG

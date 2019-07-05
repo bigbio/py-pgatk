@@ -24,8 +24,8 @@ from pypgatk.toolbox.exceptions import AppConfigException
 @click.option('--no_isobaric',         '-b', help='Do not make decoy peptides isobaric. Default=false')
 @click.option('--memory_save',         '-m', help='Slower but uses less memory (does not store decoy peptide list). Default=false')
 @click.pass_context
-def generate_database(ctx, config_file, output, input, cleavage_sites, anti_cleavages_sites, cleavage_position, min_peptide_length,
-                   max_iteractions, do_not_shuffle, do_not_switch, decoy_prefix, temp_file, no_isobaric, memory_save):
+def generate_database(ctx, config_file, output, input, cleavage_sites, anti_cleavage_sites, cleavage_position, min_peptide_length,
+                   max_iterations, do_not_shuffle, do_not_switch, decoy_prefix, temp_file, no_isobaric, memory_save):
 
     if config_file is None:
         msg = "The config file for the pipeline is missing, please provide one "
@@ -46,14 +46,14 @@ def generate_database(ctx, config_file, output, input, cleavage_sites, anti_clea
     if cleavage_position is not None:
         pipeline_arguments[ProteinDBService.CONFIG_CLEAVAGE_POSITION] = cleavage_position
 
-    if anti_cleavages_sites is not None:
-        pipeline_arguments[ProteinDBService.CONFIG_ANTI_CLEAVAGE_SITES] = anti_cleavages_sites
+    if anti_cleavage_sites is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_ANTI_CLEAVAGE_SITES] = anti_cleavage_sites
 
     if min_peptide_length is not None:
         pipeline_arguments[ProteinDBService.CONFIG_PEPTIDE_LENGTH] = min_peptide_length
 
-    if max_interactions is not None:
-        pipeline_arguments[ProteinDBService.CONFIG_MAX_ITERATIONS] = max_iteractions
+    if max_iterations is not None:
+        pipeline_arguments[ProteinDBService.CONFIG_MAX_ITERATIONS] = max_iterations
 
     if do_not_shuffle is not None:
         pipeline_arguments[ProteinDBService.CONFIG_DO_NOT_SUFFLE] = do_not_shuffle

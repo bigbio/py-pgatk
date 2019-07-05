@@ -38,7 +38,7 @@ class ProteinDBService(ParameterConfiguration):
     CONFIG_CLEAVAGE_SITES = 'cleavage_sites'
     CONFIG_CLEAVAGE_POSITION = 'cleavage_position'
     CONFIG_ANTI_CLEAVAGE_SITES = 'anti_cleavage_sites'
-    CONFIG_PEPTIDE_LENGTH = 'peptide_length'
+    CONFIG_PEPTIDE_LENGTH = 'min_peptide_length'
     CONFIG_MAX_ITERATIONS = 'max_iterations'
     CONFIG_DO_NOT_SUFFLE = 'do_not_shuffle'
     CONFIG_DO_NOT_SWITCH = 'do_not_switch'
@@ -61,9 +61,7 @@ class ProteinDBService(ParameterConfiguration):
         if self.CONFIG_TEMP_FILE in self.get_pipeline_parameters():
             self._temp_file = self.get_pipeline_parameters()[self.CONFIG_TEMP_FILE]
 
-        self._input_fasta = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_INPUT_FILE]
-        if self.CONFIG_INPUT_FILE in self.get_pipeline_parameters():
-            self._temp_file = self.get_pipeline_parameters()[self.CONFIG_INPUT_FILE]
+        self._input_fasta = self.get_pipeline_parameters()[self.CONFIG_INPUT_FILE]
 
         self._isobaric = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_NO_ISOBARIC]
         if self.CONFIG_NO_ISOBARIC in self.get_pipeline_parameters():
@@ -80,7 +78,7 @@ class ProteinDBService(ParameterConfiguration):
 
         self._decoy_prefix = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
             self.CONFIG_DECOY_PREFIX]
-        if self.CONFIG_CLEAVAGE_SITES in self.get_pipeline_parameters():
+        if self.CONFIG_DECOY_PREFIX in self.get_pipeline_parameters():
             self._decoy_prefix = self.get_pipeline_parameters()[self.CONFIG_DECOY_PREFIX]
 
         self._cleavage_position = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][

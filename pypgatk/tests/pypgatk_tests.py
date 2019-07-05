@@ -142,6 +142,17 @@ def cosmic_to_proteindb():
                             '--split_by_tissue_type', '--tissue_type', 'all'])
     assert result.exit_code == 0
 
+def generate_decoy_database():
+    """
+        Test generation proteinDB from altORFs using dnaseq-to-proteindb tool
+        :return:
+        """
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['generate-decoy', '--config_file', 'config/protein_decoy.yaml',
+                            '--input', 'testdata/test_db.fa', '--output', 'testdata/output_decoy.fa'])
+    assert result.exit_code == 0
+
 
 if __name__ == '__main__':
     vcf_to_proteindb()
@@ -153,4 +164,5 @@ if __name__ == '__main__':
     dnaseq_altorfs_to_proteindb()
     # Todo: cbioportal is failing
     # cbioportal_to_proteindb()
+    generate_decoy_database()
     cosmic_to_proteindb()
