@@ -1,4 +1,6 @@
 import csv
+from concurrent.futures import as_completed
+from concurrent.futures.thread import ThreadPoolExecutor
 
 from requests import get
 
@@ -14,6 +16,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
     CONFIG_CBIOPORTAL_API_SERVER = 'base_url'
     CONFIG_CBIOPORTAL_API_CANCER_STUDIES = "cancer_studies"
     CONFIG_LIST_STUDIES = "list_studies"
+    CONFIG_MULTITHREADING = "multithreading"
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -30,11 +33,16 @@ class CbioPortalDownloadService(ParameterConfiguration):
         else:
             self._local_path_cbioportal = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                 self.CONFIG_OUTPUT_DIRECTORY]
-        
+
         self._list_studies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_LIST_STUDIES]
         if self.CONFIG_LIST_STUDIES in self.get_pipeline_parameters():
             self._list_studies = self.get_pipeline_parameters()[self.CONFIG_LIST_STUDIES]
-        
+
+        self._multithreading = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+            self.CONFIG_MULTITHREADING]
+        if self.CONFIG_MULTITHREADING in self.get_pipeline_parameters():
+            self._multithreading = self.get_pipeline_parameters()[self.CONFIG_MULTITHREADING]
+
         self.prepare_local_cbioportal_repository()
 
     def prepare_local_cbioportal_repository(self):
@@ -67,7 +75,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
         :return: None
         """
 
-        if self._cbioportal_studies is None or len(self._cbioportal_studies)==0:
+        if self._cbioportal_studies is None or len(self._cbioportal_studies) == 0:
             self.get_cancer_studies()
 
         if 'all' not in download_study:
@@ -80,10 +88,22 @@ class CbioPortalDownloadService(ParameterConfiguration):
         else:
             csv_reader = csv.reader(self._cbioportal_studies.splitlines(), delimiter="\t")
             line_count = 0
-            for row in csv_reader:
-                if line_count != 0:
-                    self.download_one_study(row[0])
-                line_count = line_count + 1
+            if self._multithreading:
+                processes = []
+                with ThreadPoolExecutor(max_workers=10) as executor:
+                    for row in csv_reader:
+                        if line_count != 0:
+                            processes.append(executor.submit(self.download_one_study, row[0]))
+                        line_count = line_count + 1
+                for task in as_completed(processes):
+                    print(task.result())
+
+
+            else:
+                for row in csv_reader:
+                    if line_count != 0:
+                        self.download_one_study(row[0])
+                    line_count = line_count + 1
 
     def download_one_study(self, download_study):
         file_name = '{}.tar.gz'.format(download_study)

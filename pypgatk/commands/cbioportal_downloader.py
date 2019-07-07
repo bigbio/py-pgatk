@@ -15,8 +15,9 @@ from pypgatk.toolbox.exceptions import AppConfigException
               help='Print the list of all the studies in cBioPortal (https://www.cbioportal.org)', is_flag=True)
 @click.option('--download_study', '-d',
               help="Download an specific Study from cBioPortal -- (all to download all studies)")
+@click.option('--multithreading', '-th', help=' Enable multithreading to download multiple files ad the same time', is_flag=True)
 @click.pass_context
-def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study):
+def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study, multithreading):
     if config_file is None:
         msg = "The config file for the pipeline is missing, please provide one "
         logging.error(msg)
@@ -27,6 +28,8 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
         pipeline_arguments[CbioPortalDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
     if list_studies:
         pipeline_arguments[CbioPortalDownloadService.CONFIG_LIST_STUDIES] = list_studies
+    if multithreading is not None:
+        pipeline_arguments[CbioPortalDownloadService.CONFIG_MULTITHREADING] = multithreading
 
     cbioportal_downloader_service = CbioPortalDownloadService(config_file, pipeline_arguments)
 

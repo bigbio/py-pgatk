@@ -10,6 +10,7 @@ cbioportal_data_downloader:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
       INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
     loglevel: DEBUG
+  multithreading: True
 proteindb:
    tissue_info:
       tissue_type: 'all'

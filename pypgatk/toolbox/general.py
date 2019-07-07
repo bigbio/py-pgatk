@@ -8,6 +8,7 @@ import os
 import json
 import shutil
 import subprocess
+import time
 from urllib import error, request
 import yaml
 
@@ -21,6 +22,7 @@ _logger_formatters = {
 }
 _log_level = 'DEBUG'
 
+REMAINING_DOWNLOAD_TRIES = 4
 
 class ParameterConfiguration:
     """
@@ -149,10 +151,17 @@ def download_file(file_url: str, file_name: str) -> str:
     """
     if os.path.isfile(file_name):
         return file_name
-    try:
-        downloaded_file = request.urlretrieve(file_url)[0]
-    except error.URLError:
-        print("Incorrect URL or file not found: ", file_url)
+    remaining_download_tries = REMAINING_DOWNLOAD_TRIES
+    downloaded_file = None
+    while remaining_download_tries > 0:
+        try:
+            downloaded_file = request.urlretrieve(file_url)[0]
+            time.sleep(0.1)
+        except error.URLError:
+            print("error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(REMAINING_DOWNLOAD_TRIES - remaining_download_tries))
+            remaining_download_tries = remaining_download_tries - 1
+            continue
+    if downloaded_file is None:
         return None
 
     # move the pep file to the desired name
