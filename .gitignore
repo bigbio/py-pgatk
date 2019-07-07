@@ -112,5 +112,4 @@ pypgatk/database_ensembl/
 pypgatk/database_cbioportal/
 pypgatk/database_cosmic/
 pypgatk/config/private/
-
-
+.pypirc
