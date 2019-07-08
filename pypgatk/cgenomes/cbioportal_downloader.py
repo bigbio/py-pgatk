@@ -5,7 +5,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from requests import get
 
 from pypgatk.toolbox.exceptions import AppException
-from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
+from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file, clear_cache
 
 
 class CbioPortalDownloadService(ParameterConfiguration):
@@ -75,6 +75,8 @@ class CbioPortalDownloadService(ParameterConfiguration):
         :return: None
         """
 
+        clear_cache()
+
         if self._cbioportal_studies is None or len(self._cbioportal_studies) == 0:
             self.get_cancer_studies()
 
@@ -90,15 +92,13 @@ class CbioPortalDownloadService(ParameterConfiguration):
             line_count = 0
             if self._multithreading:
                 processes = []
-                with ThreadPoolExecutor(max_workers=10) as executor:
+                with ThreadPoolExecutor(max_workers=10, thread_name_prefix='Thread-Download') as executor:
                     for row in csv_reader:
                         if line_count != 0:
                             processes.append(executor.submit(self.download_one_study, row[0]))
                         line_count = line_count + 1
                 for task in as_completed(processes):
                     print(task.result())
-
-
             else:
                 for row in csv_reader:
                     if line_count != 0:
@@ -110,8 +110,11 @@ class CbioPortalDownloadService(ParameterConfiguration):
         file_url = '{}/{}'.format(
             self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_CBIOPORTAL_DOWNLOAD_URL],
             file_name)
-        file_name = download_file(file_url, self.get_local_path_root_cbioportal_repo() + '/' + file_name)
-        msg = "The following study '{}' has been downloaded. ".format(file_name)
+        file_name = download_file(file_url, self.get_local_path_root_cbioportal_repo() + '/' + file_name, self.get_logger())
+        if file_name is not None:
+            msg = "The following study '{}' has been downloaded. ".format(download_study)
+        else:
+            msg = "The following study '{}' hasn't been downloaded. ".format(download_study)
         self.get_logger().debug(msg)
         return file_name
 

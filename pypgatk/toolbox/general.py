@@ -10,10 +10,14 @@ import shutil
 import subprocess
 import time
 from urllib import error, request
+from urllib.error import URLError, ContentTooShortError
+
+import progressbar as progressbar
 import yaml
 
-
 # Logging defaults
+from requests import HTTPError
+
 from pypgatk.toolbox.exceptions import ToolBoxException
 
 _logger_formatters = {
@@ -23,6 +27,24 @@ _logger_formatters = {
 _log_level = 'DEBUG'
 
 REMAINING_DOWNLOAD_TRIES = 4
+
+
+class MyProgressBar():
+
+    def __init__(self):
+        self.pbar = None
+
+    def __call__(self, block_num, block_size, total_size):
+        if not self.pbar:
+            self.pbar = progressbar.ProgressBar(maxval=total_size)
+            self.pbar.start()
+
+        downloaded = block_num * block_size
+        if downloaded < total_size:
+            self.pbar.update(downloaded)
+        else:
+            self.pbar.finish()
+
 
 class ParameterConfiguration:
     """
@@ -46,7 +68,7 @@ class ParameterConfiguration:
 
         self._configuration_file = yaml_configuration_file
         with open(yaml_configuration_file, 'r') as f:
-            self._default_params = yaml.load(f.read())
+            self._default_params = yaml.load(f.read(), Loader=yaml.FullLoader)
         self._pipeline_parameters = pipeline_parameters
 
         # Prepare Logging subsystem
@@ -141,41 +163,57 @@ def check_create_folders(folders: str):
                 raise ToolBoxException("'{}' is not a folder".format(folder))
 
 
-def download_file(file_url: str, file_name: str) -> str:
+def clear_cache():
+    request.urlcleanup()
+
+
+def download_file(file_url: str, file_name: str, log: logging) -> str:
     """
      Download file_url and move it to file_name, do nothing if file_name already exists.
 
+    :param log: log to be use.
     :param file_url: file url to be download
     :param file_name: file name where the data will be downloaded
     :return: name of the file if the file can be download.
     """
     if os.path.isfile(file_name):
         return file_name
+
+    if log is not None:
+        log = logging
+
     remaining_download_tries = REMAINING_DOWNLOAD_TRIES
     downloaded_file = None
     while remaining_download_tries > 0:
         try:
-            downloaded_file = request.urlretrieve(file_url)[0]
-            time.sleep(0.1)
-        except error.URLError:
-            print("error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(REMAINING_DOWNLOAD_TRIES - remaining_download_tries))
+            downloaded_file, error_code = request.urlretrieve(file_url, file_name)
+            log.debug("File downloaded -- " + downloaded_file)
+            break
+        except (HTTPError, URLError, ContentTooShortError) as error:
+            logging.error("Error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(
+                REMAINING_DOWNLOAD_TRIES - remaining_download_tries))
+            log.error("Error code: " + str(error.code))
             remaining_download_tries = remaining_download_tries - 1
             continue
-    if downloaded_file is None:
-        return None
+        except Exception as error:
+            remaining_download_tries = remaining_download_tries - 1
+            log.error("Error code: " + str(error.code))
+
+    return downloaded_file
 
     # move the pep file to the desired name
-    if os.path.isfile(downloaded_file):
-        if os.stat(downloaded_file).st_size > 1000:
-            shutil.move(downloaded_file, file_name)
-            return file_name
-        else:
-            print("Corrupt File (size<1kb): ", file_url)
-            os.remove(downloaded_file)
-            return None
-    else:
-        print("Failed to download the file: ", file_url)
-        return None
+    # if os.path.isfile(downloaded_file):
+    #     if os.stat(downloaded_file).st_size > 1000:
+    #         shutil.move(downloaded_file, file_name)
+    #         logging.debug("File copy to filesystem -- " + downloaded_file)
+    #         return file_name
+    #     else:
+    #         print("Corrupt File (size<1kb): ", file_url)
+    #         os.remove(downloaded_file)
+    #         return None
+    # else:
+    #     print("Failed to download the file: ", file_url)
+    #     return None
 
 
 def check_create_folders_overwrite(folders):
