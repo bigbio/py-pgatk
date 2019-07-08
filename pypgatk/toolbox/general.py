@@ -8,11 +8,8 @@ import os
 import json
 import shutil
 import subprocess
-import time
 from urllib import error, request
 from urllib.error import URLError, ContentTooShortError
-
-import progressbar as progressbar
 import yaml
 
 # Logging defaults
@@ -27,23 +24,6 @@ _logger_formatters = {
 _log_level = 'DEBUG'
 
 REMAINING_DOWNLOAD_TRIES = 4
-
-
-class MyProgressBar():
-
-    def __init__(self):
-        self.pbar = None
-
-    def __call__(self, block_num, block_size, total_size):
-        if not self.pbar:
-            self.pbar = progressbar.ProgressBar(maxval=total_size)
-            self.pbar.start()
-
-        downloaded = block_num * block_size
-        if downloaded < total_size:
-            self.pbar.update(downloaded)
-        else:
-            self.pbar.finish()
 
 
 class ParameterConfiguration:
