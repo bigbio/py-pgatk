@@ -156,7 +156,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             print("No valid info is available species: ", species)
 
@@ -175,7 +175,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             print("No valid info is available species: ", species)
 
@@ -194,7 +194,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             print("No valid info is available species: ", species)
 
@@ -213,7 +213,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             print("No valid info is available species: ", species)
 
@@ -235,7 +235,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_url = '{}/release-{}/gtf/{}/{}'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name))
+            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             self.get_logger().debug("No valid info is available species: ", species)
 
