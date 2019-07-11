@@ -39,6 +39,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     CONFIG_KEY_GTF_FILE = 'gtf_file'
     CONFIG_REST_API_TAXON_ID = 'taxon_id'
     CONFIG_TAXONOMY = 'taxonomy'
+    CONFIG_LIST_TAXONOMIES = 'list_taxonomies'
     CONFIG_KEY_SKIP_PROTEIN = 'skip_protein'
     CONFIG_KEY_SKIP_GTF = 'skip_gtf'
     CONFIG_KEY_SKIP_CDS = 'skip_cds'
@@ -60,6 +61,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         else:
             self._local_path_ensembl = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                 self.CONFIG_OUTPUT_DIRECTORY]
+        
+        self._list_taxonomies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_LIST_TAXONOMIES]
+        if self.CONFIG_LIST_TAXONOMIES in self.get_pipeline_parameters():
+            self._list_taxonomies = self.get_pipeline_parameters()[self.CONFIG_LIST_TAXONOMIES]
 
         self.prepare_local_ensembl_repository()
 
@@ -96,12 +101,14 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         species_parameters = self.get_pipeline_parameters()[self.CONFIG_TAXONOMY]
         species_list = species_parameters.split(",")
         total_files = []
+        files = []
         if species_list is None or len(species_list) == 0 or len(species_parameters) == 0:
             for species in self._ensembl_species:
                 self.get_logger().debug(
                     "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
-                    files = self.get_pep_files(species)
+                    prot_files = self.get_pep_files(species)
+                    files.extend(prot_files)
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
                     gtf_files = self.get_gtf_files(species)
                     files.extend(gtf_files)
@@ -124,7 +131,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                         self.get_logger().debug(
                             "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
-                            files = self.get_pep_files(species)
+                            prot_files = self.get_pep_files(species)
+                            files.extend(prot_files)
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
                             gtf_files = self.get_gtf_files(species)
                             files.extend(gtf_files)

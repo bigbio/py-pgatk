@@ -20,16 +20,18 @@ from pypgatk.toolbox.exceptions import AppConfigException
               default='release-')
 @click.option('--taxonomy',
               '-t',
-              help='Taxonomy List (comma separated) that will be use to download the data from Ensembl',
+              help='Taxonomy identifiers (comma separated list can be given) that will be use to download the data from Ensembl',
               default='')
+@click.option('--list_taxonomies', '-l',
+              help='Print the list of all the taxonomies in ENSEMBL (https://www.ensembl.org)', is_flag=True, default=False)
 @click.option('--skip_gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
 @click.option('--skip_protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
 @click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
 @click.option('--skip_cdna', '-sd', help='Skip the cDNA file download', is_flag=True)
 @click.option('--skip_ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
-@click.option('--skip_vcf', '-vcf', help='Skip the VCF variant file', is_flag=True)
-def ensembl_downloader(config_file, output_directory, folder_prefix_release, taxonomy, skip_gtf,
-                       skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf):
+@click.option('--skip_vcf', '-svcf', help='Skip the VCF variant file', is_flag=True)
+def ensembl_downloader(config_file, output_directory, folder_prefix_release, taxonomy, list_taxonomies,
+                       skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     if config_file is None:
@@ -45,6 +47,8 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_FOLDER_PREFIX_RELEASE] = folder_prefix_release
     if taxonomy is not None:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_TAXONOMY] = taxonomy
+    if list_taxonomies:
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_LIST_TAXONOMIES] = list_taxonomies
     if skip_protein is not None and skip_protein:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_PROTEIN] = True
     else:
@@ -68,9 +72,13 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
 
     ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
 
+    
     logger = ensembl_download_service.get_logger_for("Main Pipeline Ensembl Downloader")
     logger.info("Pipeline STARTING ... ")
-
+    if list_taxonomies:
+        list_of_taxonomies = ensembl_download_service.get_species_from_rest()
+        print(list_of_taxonomies)
+    
     ensembl_download_service.download_database_by_species()
 
     logger.info("Pipeline Finish !!!")

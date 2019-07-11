@@ -153,6 +153,27 @@ def generate_decoy_database():
                             '--input', 'testdata/test_db.fa', '--output', 'testdata/output_decoy.fa'])
     assert result.exit_code == 0
 
+def download_ensembl_data():
+    """
+        Test downloading ensembl data for species with taxonomy identifer = 9358
+        :return:
+        """
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
+                            '--taxonomy', '9358', '--output_directory', 'testdata'])
+    assert result.exit_code == 0
+
+def download_cbioportal_data():
+    """
+        Test downloading cbioportal data for study id: paac_jhu_2014
+        :return:
+        """
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['cbioportal-downloader', '--config_file', 'config/cbioportal_config.yaml',
+                            '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
+    assert result.exit_code == 0
 
 if __name__ == '__main__':
     vcf_to_proteindb()
@@ -165,3 +186,5 @@ if __name__ == '__main__':
     cbioportal_to_proteindb()
     generate_decoy_database()
     cosmic_to_proteindb()
+    download_ensembl_data()
+    download_cbioportal_data()
