@@ -20,7 +20,6 @@ from pypgatk.toolbox.exceptions import ToolBoxException
 
 REMAINING_DOWNLOAD_TRIES = 4
 
-
 class ParameterConfiguration:
     """
     This class is a helper class for those submodules having to manage configuration files themselves, that are specific
@@ -111,7 +110,7 @@ class ParameterConfiguration:
         lg = logging.getLogger(name)
         for handler in self.get_log_handlers():
             lg.addHandler(handler)
-        lg.setLevel(_log_level)
+        lg.setLevel(self._log_level)
         return lg
 
 

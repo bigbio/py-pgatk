@@ -1,4 +1,4 @@
-enmsembl_translation:
+ensembl_translation:
   translation_table: 1
   proteindb_output_file: 'peptide-database.fa'
   ensembl_translation:

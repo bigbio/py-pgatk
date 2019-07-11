@@ -26,7 +26,7 @@ class EnsemblDataService(ParameterConfiguration):
     INCLUDE_CONSEQUENCES = "include_consequences"
     BIOTYPE_STR = "biotype_str"
     SKIP_INCLUDING_ALL_CDSS = "skip_including_all_CDSs"
-    CONFIG_KEY_DATA = "enmsembl_translation"
+    CONFIG_KEY_DATA = "ensembl_translation"
     NUM_ORFS = "num_orfs"
     NUM_ORFS_COMPLEMENT = "num_orfs_complement"
     EXPRESSION_STR = "expression_str"
