@@ -172,12 +172,14 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
         except (HTTPError, URLError, ContentTooShortError) as error:
             logging.error("Error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(
                 REMAINING_DOWNLOAD_TRIES - remaining_download_tries))
-            log.error("Error code: " + str(error_code))
+            log.error("Error code: " + str(error))
             remaining_download_tries = remaining_download_tries - 1
+            downloaded_file = None
             continue
         except Exception as error:
             remaining_download_tries = remaining_download_tries - 1
-            log.error("Error code: " + str(error_code))
+            log.error("Error code: " + str(error))
+            downloaded_file = None
 
     return downloaded_file
 

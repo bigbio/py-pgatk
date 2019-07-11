@@ -155,13 +155,13 @@ def generate_decoy_database():
 
 def download_ensembl_data():
     """
-        Test downloading ensembl data for species with taxonomy identifer = 9358
+        Test downloading ensembl data for species with taxonomy identifer = 9103
         :return:
         """
     runner = CliRunner()
     result = runner.invoke(cli,
                            ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
-                            '--taxonomy', '9358', '--output_directory', 'testdata'])
+                            '--taxonomy', '9103', '--output_directory', 'testdata'])
     assert result.exit_code == 0
 
 def download_cbioportal_data():

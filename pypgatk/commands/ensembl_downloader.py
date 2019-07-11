@@ -69,6 +69,10 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDNA] = True
     else:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDNA] = False
+    if skip_vcf is not None and skip_vcf:
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_VCF] = True
+    else:
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_VCF] = False
 
     ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
 

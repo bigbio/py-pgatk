@@ -45,6 +45,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     CONFIG_KEY_SKIP_CDS = 'skip_cds'
     CONFIG_KEY_SKIP_CDNA = 'skip_cdna'
     CONFIG_KEY_SKIP_NCRNA = 'skip_ncrna'
+    CONFIG_KEY_SKIP_VCF = 'skip_vcf'
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -121,6 +122,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
                     ncrna_files = self.get_ncrna_files(species)
                     files.extend(ncrna_files)
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
+                    vcf_files = self.get_vcf_files(species)
+                    files.extend(vcf_files)
+                
                 total_files.extend(files)
                 self.get_logger().debug("Files downloaded -- " + ",".join(files))
                 total_files.extend(files)
@@ -145,6 +150,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
                             ncrna_files = self.get_ncrna_files(species)
                             files.extend(ncrna_files)
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
+                            vcf_files = self.get_vcf_files(species)
+                            files.extend(vcf_files)
+                        
                         total_files.extend(files)
                         self.get_logger().debug("Files downloaded -- " + ",".join(files))
                         total_files.extend(files)
@@ -153,7 +162,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     def get_cds_files(self, species: dict) -> list:
         """
-        Get the cds files for an specific species object.
+        Get the cds files for a specific species object.
         :return: List of files names.
         """
         files = []
@@ -172,7 +181,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     def get_cdna_files(self, species: dict) -> list:
         """
-        Get the cds files for an specific species object.
+        Get the cds files for a specific species object.
         :return: List of files names.
         """
         files = []
@@ -191,7 +200,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     def get_ncrna_files(self, species: dict) -> list:
         """
-        Get the cds files for an specific species object.
+        Get the cds files for a specific species object.
         :return: List of files names.
         """
         files = []
@@ -210,7 +219,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     def get_pep_files(self, species: dict) -> list:
         """
-        Get the peptide files for an specific species object.
+        Get the peptide files for a specific species object.
         :return: List of files names.
         """
         files = []
@@ -229,13 +238,13 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     def get_gtf_files(self, species: dict) -> list:
         """
-        This method retrieve the gtf files for an specific specie object
+        This method retrieve the gtf files for a specific specie object
         :param species:
         :return:
         """
         """
           Generate GTF file name from the species info and download the GTF file
-          """
+        """
         files = []
         try:
             file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
@@ -248,4 +257,48 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             self.get_logger().debug("No valid info is available species: ", species)
 
         return files
-
+    
+    def get_vcf_files(self, species: dict) -> list:
+        """
+        This method retrieve the vcf file for a specific specie object
+        :param species:
+        :return:
+        """
+        """
+          Generate VCF file name from the species info and download it
+          ftp://ftp.ensembl.org/pub/release-97/variation/vcf/felis_catus/felis_catus_incl_consequences.vcf.gz
+        """
+        files = []
+        try:
+            file_name = '{}_incl_consequences.vcf.gz'.format(species['name'])
+            file_url = '{}/release-{}/variation/vcf/{}/'.format(
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                    self.CONFIG_KEY_BASE_URL], species['release'], species['name'])
+            
+            downloaded_file = download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger())
+            if downloaded_file is not None:
+                files.append(downloaded_file)
+            
+            elif species['name']=='homo_sapiens':
+                "for humans the variants are stored per chromosome, so we need to download them all and combine them into one file here"
+                chrN=1
+                file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], chrN)
+                downloaded_file = download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger())
+                if downloaded_file is not None:
+                    "if chr1 is downloaded then try all others"
+                    files.append(downloaded_file)
+                    for chrN in range(2, 23):#chr2-22
+                        file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], chrN)
+                        files.append(download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+                    file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], 'X')
+                    files.append(download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+                    file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], 'Y')
+                    files.append(download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+                    file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], 'MT')
+                    files.append(download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+                    
+        except KeyError:
+            self.get_logger().debug("No valid info is available species: ", species)
+            
+        return files
+    
