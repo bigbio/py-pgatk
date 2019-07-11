@@ -17,11 +17,6 @@ from requests import HTTPError
 
 from pypgatk.toolbox.exceptions import ToolBoxException
 
-_logger_formatters = {
-    "DEBUG": "%(asctime)s [%(levelname)7s][%(name)28s][%(module)18s, %(lineno)4s] %(message)s",
-    "INFO": "%(asctime)s [%(levelname)7s][%(name)28s] %(message)s"
-}
-_log_level = 'DEBUG'
 
 REMAINING_DOWNLOAD_TRIES = 4
 
@@ -32,6 +27,12 @@ class ParameterConfiguration:
     to them
     """
 
+    _logger_formatters = {
+    "DEBUG": "%(asctime)s [%(levelname)7s][%(name)28s][%(module)18s, %(lineno)4s] %(message)s",
+    "INFO": "%(asctime)s [%(levelname)7s][%(name)28s] %(message)s"
+    }
+    _log_level = 'DEBUG'
+    
     _CONFIG_LOGGER = 'logger'
     _CONFIG_LOGGER_FORMATTER = 'formatters'
     _CONFIG_LOGGER_LEVEL = 'loglevel'
@@ -55,10 +56,10 @@ class ParameterConfiguration:
         if self._ROOT_CONFIG_NAME in self._default_params:
             if self._CONFIG_LOGGER in self._default_params[self._ROOT_CONFIG_NAME]:
                 if self._CONFIG_LOGGER_LEVEL in self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER]:
-                    _log_level = self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER][
+                    self._log_level = self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER][
                         self._CONFIG_LOGGER_LEVEL]
                 if self._CONFIG_LOGGER_FORMATTER in self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER]:
-                    _logger_formatters = self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER][
+                    self._logger_formatters = self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER][
                         self._CONFIG_LOGGER_FORMATTER]
 
         self._log_handlers = []
@@ -66,9 +67,9 @@ class ParameterConfiguration:
         log_handlers_extension = '.log'
 
         self._logger = logging.getLogger(__name__)
-        self._logger.setLevel(getattr(logging, _log_level))
+        self._logger.setLevel(getattr(logging, self._log_level))
         self._log_files = []
-        for llevel, lformat in _logger_formatters.items():
+        for llevel, lformat in self._logger_formatters.items():
             logfile = os.path.join(log_handlers_prefix + llevel.lower() + log_handlers_extension)
             lformatter = logging.Formatter(lformat)
             lhandler = logging.FileHandler(logfile, mode='w')

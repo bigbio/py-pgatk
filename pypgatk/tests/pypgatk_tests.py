@@ -162,7 +162,6 @@ if __name__ == '__main__':
     dnaseq_sncrnas_to_proteindb()
     dnaseq_pseudogenes_to_proteindb()
     dnaseq_altorfs_to_proteindb()
-    # Todo: cbioportal is failing
-    # cbioportal_to_proteindb()
+    cbioportal_to_proteindb()
     generate_decoy_database()
     cosmic_to_proteindb()
